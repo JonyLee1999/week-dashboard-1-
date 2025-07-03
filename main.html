@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自动化周报平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#36CFC9',
+                        accent: '#FF7D00',
+                        success: '#52C41A',
+                        warning: '#FAAD14',
+                        danger: '#F5222D',
+                        neutral: '#86909C',
+                        'neutral-light': '#F2F3F5',
+                        'neutral-dark': '#4E5969',
+                        'platform-meituan': '#FF3366',
+                        'platform-eleme': '#00B42A',
+                        'platform-jddj': '#E4393C',
+                        'platform-duodian': '#FF7D00',
+                        'platform-taoxianda': '#FF4400'
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+    .content-auto {
+        content-visibility: auto;
+    }
+    .shadow-card {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+    .transition-all-300 {
+        transition: all 300ms ease-in-out;
+    }
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
+    .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    .card-hover:hover {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        transform: translateY(-0.25rem);
+        transition: all 300ms;
+    }
+    .tab-active {
+        color: #165DFF;
+        border-color: #165DFF;
+        font-weight: 500;
+    }
+    .chart-container {
+        background-color: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        padding: 1rem;
+        height: 100%;
+    }
+    </style>
+</head>
+<body class="font-inter bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-line-chart text-primary text-2xl"></i>
+                <h1 class="text-xl font-bold text-primary">周报</h1>
+            </div>
+            <div class="flex items-center space-x-3">
+                <button id="exportBtn" class="px-3 py-1.5 bg-primary text-white rounded-md hover:bg-primary/90 transition-all-300 flex items-center">
+                    <i class="fa fa-download mr-1"></i> 导出
+                </button>
+                <button id="refreshBtn" class="px-3 py-1.5 bg-secondary text-white rounded-md hover:bg-secondary/90 transition-all-300 flex items-center">
+                    <i class="fa fa-refresh mr-1"></i> 刷新
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 平台切换标签 -->
+    <div class="bg-white shadow-sm py-2 sticky top-16 z-40">
+        <div class="container mx-auto px-4">
+            <div class="flex overflow-x-auto scrollbar-hide space-x-1">
+                <button class="platform-tab min-w-[100px] py-2 px-4 text-center border-b-2 border-primary text-primary font-medium" data-platform="all">全平台</button>
+                <button class="platform-tab min-w-[100px] py-2 px-4 text-center border-b-2 border-transparent text-gray-600 hover:text-primary transition-all-300" data-platform="meituan">美团</button>
+                <button class="platform-tab min-w-[100px] py-2 px-4 text-center border-b-2 border-transparent text-gray-600 hover:text-primary transition-all-300" data-platform="eleme">饿了么</button>
+                <button class="platform-tab min-w-[100px] py-2 px-4 text-center border-b-2 border-transparent text-gray-600 hover:text-primary transition-all-300" data-platform="jddj">京东到家</button>
+                <button class="platform-tab min-w-[100px] py-2 px-4 text-center border-b-2 border-transparent text-gray-600 hover:text-primary transition-all-300" data-platform="duodian">多点</button>
+                <button class="platform-tab min-w-[100px] py-2 px-4 text-center border-b-2 border-transparent text-gray-600 hover:text-primary transition-all-300" data-platform="taoxianda">淘鲜达</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主内容区 -->
+    <main class="flex-grow container mx-auto px-4 py-6">
+        <!-- 日期筛选区 -->
+        <section class="bg-white rounded-xl shadow-card p-5 mb-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="flex items-center space-x-4">
+                    <label class="text-sm font-medium text-gray-700">选择日期范围:</label>
+                    <div class="relative">
+                        <input type="text" id="dateRange" placeholder="点击选择日期范围" 
+                               class="pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
+                               readonly>
+                        <i class="fa fa-calendar absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                    <button class="px-3 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-all-300">
+                        应用
+                    </button>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <button class="date-filter-btn px-3 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-all-300" data-range="week">本周</button>
+                    <button class="date-filter-btn px-3 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-all-300" data-range="lastWeek">上周</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 指标卡片区 -->
+        <section class="bg-white rounded-xl shadow-card p-5 mb-6">
+            <h2 class="text-lg font-semibold mb-4 flex items-center">
+                <i class="fa fa-dashboard text-primary mr-2"></i> 核心指标概览
+            </h2>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- GMV指标卡 -->
+                <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-primary card-hover">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm text-gray-500">GMV</p>
+                            <h3 class="text-2xl font-bold mt-1">¥2,456,890</h3>
+                            <div class="flex items-center mt-2 text-sm">
+                                <span class="text-success flex items-center">
+                                    <i class="fa fa-arrow-up mr-1"></i> 12.5%
+                                </span>
+                                <span class="text-gray-500 ml-2">同比</span>
+                                <span class="text-success flex items-center ml-4">
+                                    <i class="fa fa-arrow-up mr-1"></i> 8.3%
+                                </span>
+                                <span class="text-gray-500 ml-2">环比</span>
+                            </div>
+                        </div>
+                        <div class="bg-primary/10 p-2 rounded-md">
+                            <i class="fa fa-money text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 新客数指标卡 -->
+                <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-secondary card-hover">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm text-gray-500">新客数</p>
+                            <h3 class="text-2xl font-bold mt-1">3,245</h3>
+                            <div class="flex items-center mt-2 text-sm">
+                                <span class="text-gray-700">占比: 24.5%</span>
+                                <div class="flex items-end">
+                                    <!-- 同比 -->
+                                    <div class="flex flex-col items-center ml-4">
+                                        <span class="text-success flex items-center">
+                                            <i class="fa fa-arrow-up mr-1"></i> 15.2%
+                                        </span>
+                                        <span class="text-gray-500 mt-1">同比</span>
+                                    </div>
+                                    <!-- 环比 -->
+                                    <div class="flex flex-col items-center ml-4">
+                                        <span class="text-success flex items-center">
+                                            <i class="fa fa-arrow-up mr-1"></i> 8.3%
+                                        </span>
+                                        <span class="text-gray-500 mt-1">环比</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-secondary/10 p-2 rounded-md">
+                            <i class="fa fa-user-plus text-secondary"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 活动GMV指标卡 -->
+                <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-accent card-hover">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm text-gray-500">活动GMV</p>
+                            <h3 class="text-2xl font-bold mt-1">¥865,420</h3>
+                            <div class="flex items-center mt-2 text-sm">
+                                <span class="text-gray-700">占比: 35.2%</span>
+                                <div class="flex items-end">
+                                    <!-- 同比 -->
+                                    <div class="flex flex-col items-center ml-4">
+                                        <span class="text-success flex items-center">
+                                            <i class="fa fa-arrow-up mr-1"></i> 15.2%
+                                        </span>
+                                        <span class="text-gray-500 mt-1">同比</span>
+                                    </div>
+                                    <!-- 环比 -->
+                                    <div class="flex flex-col items-center ml-4">
+                                        <span class="text-success flex items-center">
+                                            <i class="fa fa-arrow-up mr-1"></i> 8.3%
+                                        </span>
+                                        <span class="text-gray-500 mt-1">环比</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-accent/10 p-2 rounded-md">
+                            <i class="fa fa-bullhorn text-accent"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 活动消耗指标卡 -->
+                <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-success card-hover">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm text-gray-500">活动消耗</p>
+                            <h3 class="text-2xl font-bold mt-1">¥86,540</h3>
+                            <div class="flex items-center mt-2 text-sm">
+                                <span class="text-gray-700">费比: 10.0%</span>
+                                <div class="flex items-end">
+                                    <!-- 同比 -->
+                                    <div class="flex flex-col items-center ml-4">
+                                        <span class="text-success flex items-center">
+                                            <i class="fa fa-arrow-up mr-1"></i> 15.2%
+                                        </span>
+                                        <span class="text-gray-500 mt-1">同比</span>
+                                    </div>
+                                    <!-- 环比 -->
+                                    <div class="flex flex-col items-center ml-4">
+                                        <span class="text-success flex items-center">
+                                            <i class="fa fa-arrow-up mr-1"></i> 8.3%
+                                        </span>
+                                        <span class="text-gray-500 mt-1">环比</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-success/10 p-2 rounded-md">
+                            <i class="fa fa-rmb text-success"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- RTB消耗指标卡 -->
+                <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-warning card-hover">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm text-gray-500">RTB消耗</p>
+                            <h3 class="text-2xl font-bold mt-1">¥42,560</h3>
+                            <div class="flex items-center mt-2 text-sm">
+                                <span class="text-gray-700">占比: 4.9%</span>
+                                <div class="flex items-end">
+                                    <!-- 同比 -->
+                                    <div class="flex flex-col items-center ml-4">
+                                        <span class="text-success flex items-center">
+                                            <i class="fa fa-arrow-up mr-1"></i> 15.2%
+                                        </span>
+                                        <span class="text-gray-500 mt-1">同比</span>
+                                    </div>
+                                    <!-- 环比 -->
+                                    <div class="flex flex-col items-center ml-4">
+                                        <span class="text-success flex items-center">
+                                            <i class="fa fa-arrow-up mr-1"></i> 8.3%
+                                        </span>
+                                        <span class="text-gray-500 mt-1">环比</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-warning/10 p-2 rounded-md">
+                            <i class="fa fa-bolt text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 供给门店数指标卡 -->
+                <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-danger card-hover">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm text-gray-500">供给门店数</p>
+                            <h3 class="text-2xl font-bold mt-1">1,256</h3>
+                            <div class="flex items-center mt-2 text-sm">
+                                <span class="text-gray-700">渗透率: 85.2%</span>
+                                <div class="ml-4">
+                                    <span class="text-success flex items-center">
+                                        <i class="fa fa-arrow-up mr-1"></i> 5.3%
+                                    </span>
+                                    <span class="text-gray-500 ml-1">环比</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-danger/10 p-2 rounded-md">
+                            <i class="fa fa-map-marker text-danger"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 店均在售SKU数指标卡 -->
+                <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-primary card-hover">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm text-gray-500">店均在售SKU数</p>
+                            <h3 class="text-2xl font-bold mt-1">1,256</h3>
+                            <div class="flex items-center mt-2 text-sm">
+                                <span class="text-success flex items-center">
+                                    <span class="text-success flex items-center">
+                                        <i class="fa fa-arrow-up mr-1"></i> 3.2%
+                                    </span>
+                                    <span class="text-gray-500 ml-1">环比</span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="bg-primary/10 p-2 rounded-md">
+                            <i class="fa fa-cubes text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- SKU售罄率指标卡 -->
+                <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-secondary card-hover">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm text-gray-500">SKU售罄率</p>
+                            <h3 class="text-2xl font-bold mt-1">8.2%</h3>
+                            <div class="flex items-center mt-2 text-sm">
+                                <span class="text-danger flex items-center">
+                                    <i class="fa fa-arrow-down mr-1"></i> 1.5%
+                                </span>
+                                <span class="text-gray-500 ml-1">环比</span>
+                            </div>
+                        </div>
+                        <div class="bg-secondary/10 p-2 rounded-md">
+                            <i class="fa fa-exclamation-triangle text-secondary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- GMV分析区 -->
+        <section class="bg-white rounded-xl shadow-card p-5 mb-6">
+            <h2 class="text-lg font-semibold mb-4 flex items-center">
+                <i class="fa fa-bar-chart text-primary mr-2"></i> GMV分析
+            </h2>
+            <!-- 双Y轴统计图（自适应） -->
+            <div class="mb-8 w-full h-96">
+                <canvas id="gmvMixChart" class="w-full h-full"></canvas>
+            </div>
+
+            <!-- 维度分析Tab -->
+            <div class="mb-4">
+                <button class="dimension-tab px-4 py-2 border-b-2 border-primary text-primary font-medium" data-dim="platform">平台</button>
+                <button class="dimension-tab px-4 py-2 border-b-2 border-transparent text-gray-600 hover:text-primary" data-dim="channel">渠道T10</button>
+                <button class="dimension-tab px-4 py-2 border-b-2 border-transparent text-gray-600 hover:text-primary" data-dim="region">区域T10</button>
+                <button class="dimension-tab px-4 py-2 border-b-2 border-transparent text-gray-600 hover:text-primary" data-dim="subbrand">子品牌T10</button>
+                <button class="dimension-tab px-4 py-2 border-b-2 border-transparent text-gray-600 hover:text-primary" data-dim="product">产品线T10</button>
+                <button class="dimension-tab px-4 py-2 border-b-2 border-transparent text-gray-600 hover:text-primary" data-dim="sku">商品T10</button>
+            </div>
+
+            <!-- 维度分析内容区 -->
+            <div id="dimension-content">
+                <!-- JS动态填充 -->
+            </div>
+            <script>
+            /** 双Y轴统计图数据（模拟） **/
+            const weeks = ['第1周', '第2周', '第3周', '第4周', '第5周', '第6周'];
+            const gmvData = [120000, 135000, 150000, 140000, 160000, 170000];
+            const yoyData = [0, 12.5, 11.1, 9.8, 14.3, 13.2];
+            const momData = [0, 8.3, 7.5, -6.7, 14.3, 6.3];
+
+            const ctx = document.getElementById('gmvMixChart').getContext('2d');
+            const gmvMixChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: weeks,
+                    datasets: [
+                        {
+                            type: 'bar',
+                            label: 'GMV',
+                            data: gmvData,
+                            backgroundColor: '#165DFF',
+                            yAxisID: 'y',
+                            barPercentage: 0.3,
+                            categoryPercentage: 0.8
+                        },
+                        {
+                            type: 'line',
+                            label: '同比',
+                            data: yoyData,
+                            borderColor: '#F5222D',
+                            backgroundColor: '#F5222D22',
+                            yAxisID: 'y1',
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#F5222D',
+                            pointStyle: 'line'
+                        },
+                        {
+                            type: 'line',
+                            label: '环比',
+                            data: momData,
+                            borderColor: '#36CFC9',
+                            backgroundColor: '#36CFC922',
+                            yAxisID: 'y1',
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#36CFC9',
+                            pointStyle: 'line'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    stacked: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: { display: true, text: 'GMV' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: { display: true, text: '同比/环比(%)' },
+                            grid: { drawOnChartArea: false },
+                            ticks: { callback: v => v + '%' }
+                        }
+                    }
+                }
+            });
+
+            // 监听窗口resize，手动resize图表
+            window.addEventListener('resize', () => {
+                gmvMixChart.resize();
+            });
+
+            /** 维度分析数据（模拟） **/
+            const dimensionData = {
+                platform: {
+                    chart: {
+                        labels: weeks,
+                        datasets: [
+                            { label: '美团', data: [40000, 45000, 50000, 48000, 52000, 55000], borderColor: '#FF3366', backgroundColor: '#FF336622', tension: 0.4 },
+                            { label: '饿了么', data: [35000, 37000, 40000, 39000, 42000, 43000], borderColor: '#00B42A', backgroundColor: '#00B42A22', tension: 0.4 },
+                            { label: '京东到家', data: [25000, 27000, 30000, 28000, 32000, 34000], borderColor: '#E4393C', backgroundColor: '#E4393C22', tension: 0.4 },
+                            { label: '多点', data: [20000, 21000, 22000, 21000, 24000, 25000], borderColor: '#FF7D00', backgroundColor: '#FF7D0022', tension: 0.4 },
+                            { label: '淘鲜达', data: [10000, 11000, 12000, 11500, 13000, 14000], borderColor: '#86909C', backgroundColor: '#86909C22', tension: 0.4 }
+                        ]
+                    },
+                    table: [
+                        { 平台: '美团', GMV: 55000, 同比: '15.2%', 环比: '8.3%' },
+                        { 平台: '饿了么', GMV: 43000, 同比: '12.1%', 环比: '7.5%' },
+                        { 平台: '京东到家', GMV: 34000, 同比: '10.8%', 环比: '6.2%' },
+                        { 平台: '多点', GMV: 25000, 同比: '9.3%', 环比: '5.1%' },
+                        { 平台: '淘鲜达', GMV: 14000, 同比: '12.1%', 环比: '7.5%' }
+                    ]
+                },
+                subbrand: {
+                    chart: {
+                        labels: weeks,
+                        datasets: [
+                            { label: '子品牌A', data: [30000, 32000, 35000, 34000, 37000, 39000], borderColor: '#165DFF', backgroundColor: '#165DFF22', tension: 0.4 },
+                            { label: '子品牌B', data: [25000, 27000, 29000, 28000, 31000, 32000], borderColor: '#36CFC9', backgroundColor: '#36CFC922', tension: 0.4 }
+                        ]
+                    },
+                    table: [
+                        { 子品牌: '子品牌A', GMV: 39000, 同比: '13.2%', 环比: '6.3%' },
+                        { 子品牌: '子品牌B', GMV: 32000, 同比: '11.5%', 环比: '5.7%' }
+                    ]
+                },
+                product: {
+                    chart: {
+                        labels: weeks,
+                        datasets: [
+                            { label: '产品线A', data: [20000, 22000, 25000, 24000, 27000, 29000], borderColor: '#FF7D00', backgroundColor: '#FF7D0022', tension: 0.4 },
+                            { label: '产品线B', data: [18000, 20000, 21000, 20000, 23000, 24000], borderColor: '#F5222D', backgroundColor: '#F5222D22', tension: 0.4 }
+                        ]
+                    },
+                    table: [
+                        { 产品线: '产品线A', GMV: 29000, 同比: '14.1%', 环比: '7.2%' },
+                        { 产品线: '产品线B', GMV: 24000, 同比: '12.3%', 环比: '6.1%' }
+                    ]
+                },
+                sku: {
+                    chart: {
+                        labels: weeks,
+                        datasets: [
+                            { label: '商品A', data: [8000, 9000, 9500, 9200, 10000, 11000], borderColor: '#52C41A', backgroundColor: '#52C41A22', tension: 0.4 },
+                            { label: '商品B', data: [7000, 7500, 8000, 7800, 8500, 9000], borderColor: '#FAAD14', backgroundColor: '#FAAD1422', tension: 0.4 }
+                        ]
+                    },
+                    table: [
+                        { 商品: '商品A', GMV: 11000, 同比: '16.2%', 环比: '8.1%' },
+                        { 商品: '商品B', GMV: 9000, 同比: '13.7%', 环比: '7.4%' }
+                    ]
+                },
+                channel: {
+                    chart: {
+                        labels: weeks,
+                        datasets: [
+                            { label: '渠道A', data: [10000, 11000, 12000, 11500, 13000, 14000], borderColor: '#86909C', backgroundColor: '#86909C22', tension: 0.4 },
+                            { label: '渠道B', data: [9000, 9500, 10000, 9800, 11000, 11500], borderColor: '#4E5969', backgroundColor: '#4E596922', tension: 0.4 }
+                        ]
+                    },
+                    table: [
+                        { 渠道: '渠道A', GMV: 14000, 同比: '12.8%', 环比: '6.9%' },
+                        { 渠道: '渠道B', GMV: 11500, 同比: '11.2%', 环比: '5.8%' }
+                    ]
+                },
+                region: {
+                    chart: {
+                        labels: weeks,
+                        datasets: [
+                            { label: '区域A', data: [15000, 16000, 17000, 16500, 18000, 19000], borderColor: '#FF4400', backgroundColor: '#FF440022', tension: 0.4 },
+                            { label: '区域B', data: [12000, 13000, 14000, 13500, 15000, 15500], borderColor: '#00B42A', backgroundColor: '#00B42A22', tension: 0.4 }
+                        ]
+                    },
+                    table: [
+                        { 区域: '区域A', GMV: 19000, 同比: '13.9%', 环比: '7.5%' },
+                        { 区域: '区域B', GMV: 15500, 同比: '12.1%', 环比: '6.2%' }
+                    ]
+                }
+            };
+
+            // 当前维度
+            let currentDim = 'platform';
+
+            // 渲染维度内容
+            function renderDimension(dim) {
+                const data = dimensionData[dim];
+                let chartId = 'dimChart_' + dim;
+                let tableHeaders = Object.keys(data.table[0]);
+                let tableHtml = `
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <canvas id="${chartId}" height="200"></canvas>
+                        </div>
+                        <div>
+                            <table class="min-w-full text-sm border rounded-lg overflow-hidden">
+                                <thead>
+                                    <tr class="bg-neutral-light">
+                                        ${tableHeaders.map(h => `<th class="px-3 py-2">${h}</th>`).join('')}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.table.map(row => `
+                                        <tr class="border-b">
+                                            ${tableHeaders.map(h => `<td class="px-3 py-2">${row[h]}</td>`).join('')}
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('dimension-content').innerHTML = tableHtml;
+                // 绘制图表
+                new Chart(document.getElementById(chartId).getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: data.chart.labels,
+                        datasets: data.chart.datasets.map(ds => ({
+                            ...ds,
+                            pointStyle: 'line'
+                        }))
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: {
+                                    usePointStyle: true,
+                                    pointStyle: 'line'
+                                }
+                            }
+                        },
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+            }
+
+            // 维度tab切换
+            document.querySelectorAll('.dimension-tab').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.dimension-tab').forEach(b => b.classList.remove('border-primary', 'text-primary', 'font-medium'));
+                    this.classList.add('border-primary', 'text-primary', 'font-medium');
+                    currentDim = this.dataset.dim;
+                    renderDimension(currentDim);
+                });
+            });
+
+            // 默认渲染
+            renderDimension(currentDim);
+            </script>
+        </section>
+
+        <!-- 用户分析区 -->
+        <section class="bg-white rounded-xl shadow-card p-5 mb-6">
+            <h2 class="text-lg font-semibold mb-4 flex items-center">
+                <i class="fa fa-users text-primary mr-2"></i> 用户分析
+            </h2>
+            <!-- Tab切换 -->
+            <div class="mb-4">
+                <button class="user-tab px-4 py-2 border-b-2 border-primary text-primary font-medium" data-type="dist">新老人群分布</button>
+                <button class="user-tab px-4 py-2 border-b-2 border-transparent text-gray-600 hover:text-primary" data-type="sales">新老人群销售额</button>
+            </div>
+            <!-- 内容区 -->
+            <div id="user-analysis-content"></div>
+            <!-- 固定下方复式双y轴图 -->
+            <div class="mt-8 w-full">
+                <h3 class="text-base font-semibold mb-2 flex items-center"><i class="fa fa-line-chart text-primary mr-2"></i>新老人群客单价</h3>
+                <div class="w-full h-96">
+                    <canvas id="userBarChartFixed"></canvas>
+                </div>
+            </div>
+        <script>
+        const userWeeks = ['第1周', '第2周', '第3周', '第4周', '第5周', '第6周'];
+        // 模拟数据
+        const userData = {
+            dist: {
+                new: [1200, 1350, 1500, 1400, 1600, 1700],
+                old: [2000, 2100, 2200, 2150, 2300, 2400],
+                newMoM: [0, 12.5, 11.1, -6.7, 14.3, 6.3],
+                oldMoM: [0, 5.0, 4.8, -2.3, 7.0, 4.3]
+            },
+            sales: {
+                new: [30000, 34000, 37000, 35000, 39000, 42000],
+                old: [50000, 52000, 54000, 53000, 56000, 58000],
+                newMoM: [0, 13.3, 8.8, -5.4, 11.4, 7.7],
+                oldMoM: [0, 4.0, 3.8, -1.9, 5.7, 3.6]
+            },
+            price: {
+                new: [25, 25.2, 24.7, 25.0, 24.4, 24.7],
+                old: [25, 24.8, 24.5, 24.7, 24.3, 24.2],
+                newMoM: [0, 0.8, -2.0, 1.2, -2.4, 1.2],
+                oldMoM: [0, -0.8, -1.2, 0.8, -1.6, -0.4]
+            }
+        };
+
+        let userChart1 = null, userChart2 = null, userChartFixed = null;
+        let currentType = 'dist';
+
+        function renderUserAnalysis(type) {
+            const content = document.getElementById('user-analysis-content');
+            if (userChart1) { userChart1.destroy(); userChart1 = null; }
+            if (userChart2) { userChart2.destroy(); userChart2 = null; }
+            // 计算百分比
+            const total = userData[type].new.map((v, i) => v + userData[type].old[i]);
+            const newPercent = userData[type].new.map((v, i) => total[i] ? (v / total[i] * 100).toFixed(1) : 0);
+            const oldPercent = userData[type].old.map((v, i) => total[i] ? (userData[type].old[i] / total[i] * 100).toFixed(1) : 0);
+            // 图例名称
+            let barLegend = type === 'dist' ? ['新客数量占比', '老客数量占比'] : ['新客销售额占比', '老客销售额占比'];
+            let lineLegend = type === 'dist' ? ['新客数量环比', '老客数量环比'] : ['新客销售额环比', '老客销售额环比'];
+            content.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="w-full h-96">
+                        <canvas id="userStackedBarChart"></canvas>
+                    </div>
+                    <div class="w-full h-96">
+                        <canvas id="userLineChart"></canvas>
+                    </div>
+                </div>
+            `;
+            // 堆叠百分比柱状图
+            const ctx1 = document.getElementById('userStackedBarChart').getContext('2d');
+            userChart1 = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: userWeeks,
+                    datasets: [
+                        {
+                            label: barLegend[0],
+                            data: newPercent,
+                            rawData: userData[type].new,
+                            backgroundColor: '#165DFF',
+                            stack: 'Stack 0',
+                            barPercentage: 0.6,
+                            categoryPercentage: 0.7
+                        },
+                        {
+                            label: barLegend[1],
+                            data: oldPercent,
+                            rawData: userData[type].old,
+                            backgroundColor: '#36CFC9',
+                            stack: 'Stack 0',
+                            barPercentage: 0.6,
+                            categoryPercentage: 0.7
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { usePointStyle: false }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.dataset.rawData[context.dataIndex];
+                                    const percent = context.parsed.y;
+                                    return `${context.dataset.label}: ${value} (${percent}%)`;
+                                }
+                            }
+                        }
+                    },
+                    interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        x: { stacked: true },
+                        y: {
+                            stacked: true,
+                            min: 0,
+                            max: 100,
+                            ticks: { callback: v => v + '%' },
+                            title: { display: true, text: '百分比' }
+                        }
+                    }
+                }
+            });
+            // 折线图（环比）
+            const ctx2 = document.getElementById('userLineChart').getContext('2d');
+            userChart2 = new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: userWeeks,
+                    datasets: [
+                        {
+                            label: lineLegend[0],
+                            data: userData[type].newMoM,
+                            borderColor: '#F5222D',
+                            backgroundColor: '#F5222D22',
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#F5222D',
+                            pointStyle: 'line'
+                        },
+                        {
+                            label: lineLegend[1],
+                            data: userData[type].oldMoM,
+                            borderColor: '#FF7D00',
+                            backgroundColor: '#FF7D0022',
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#FF7D00',
+                            pointStyle: 'line'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { usePointStyle: true, pointStyle: 'line' }
+                        }
+                    },
+                    interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        y: {
+                            min: Math.min(...userData[type].newMoM, ...userData[type].oldMoM, 0),
+                            max: Math.max(...userData[type].newMoM, ...userData[type].oldMoM, 0),
+                            title: { display: true, text: '环比(%)' },
+                            ticks: { callback: v => v + '%' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 固定 - 新老人群客单价
+        function renderUserFixedBar() {
+            if (userChartFixed) { userChartFixed.destroy(); userChartFixed = null; }
+            const barData = userData.price;
+            const ctx = document.getElementById('userBarChartFixed').getContext('2d');
+            userChartFixed = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: userWeeks,
+                    datasets: [
+                        {
+                            type: 'line',
+                            label: '新客客单价',
+                            data: barData.new,
+                            borderColor: '#165DFF',
+                            backgroundColor: '#165DFF22',
+                            yAxisID: 'y',
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#165DFF',
+                            pointStyle: 'line'
+                        },
+                        {
+                            type: 'line',
+                            label: '老客客单价',
+                            data: barData.old,
+                            borderColor: '#36CFC9',
+                            backgroundColor: '#36CFC922',
+                            yAxisID: 'y',
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#36CFC9',
+                            pointStyle: 'line'
+                        },
+                        {
+                            type: 'line',
+                            label: '新客客单价环比',
+                            data: barData.newMoM,
+                            borderColor: '#F5222D',
+                            backgroundColor: '#F5222D22',
+                            yAxisID: 'y1',
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#F5222D',
+                            pointStyle: 'line',
+                            hidden: true
+                        },
+                        {
+                            type: 'line',
+                            label: '老客客单价环比',
+                            data: barData.oldMoM,
+                            borderColor: '#FF7D00',
+                            backgroundColor: '#FF7D0022',
+                            yAxisID: 'y1',
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#FF7D00',
+                            pointStyle: 'line',
+                            hidden: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { usePointStyle: true, pointStyle: 'line' }
+                        }
+                    },
+                    interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: { display: true, text: '单价' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: { display: true, text: '环比(%)' },
+                            grid: { drawOnChartArea: false },
+                            ticks: { callback: v => v + '%' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Tab切换
+        document.querySelectorAll('.user-tab').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.user-tab').forEach(b => b.classList.remove('border-primary', 'text-primary', 'font-medium'));
+                this.classList.add('border-primary', 'text-primary', 'font-medium');
+                currentType = this.dataset.type;
+                renderUserAnalysis(currentType);
+            });
+        });
+
+        // 首次渲染
+        renderUserAnalysis(currentType);
+        renderUserFixedBar();
+
+        // 窗口resize自适应
+        window.addEventListener('resize', () => {
+            if (userChart1) userChart1.resize();
+            if (userChart2) userChart2.resize();
+            if (userChartFixed) userChartFixed.resize();
+        });
+        </script>
+        </section>
+        
+        <!-- 活动分析区 -->
+        <section class="bg-white rounded-xl shadow-card p-5 mb-6">
+            <h2 class="text-lg font-semibold mb-4 flex items-center">
+                <i class="fa fa-bullhorn text-primary mr-2"></i> 活动分析
+            </h2>
+            <!-- 复式双y轴趋势图 -->
+            <div class="mb-8 w-full h-96">
+                <canvas id="promoTrendChart"></canvas>
+            </div>
+            <!-- 表格切换Tab -->
+            <div class="mb-4">
+                <button class="promo-table-tab px-4 py-2 border-b-2 border-primary text-primary font-medium" data-type="overall">整体</button>
+                <button class="promo-table-tab px-4 py-2 border-b-2 border-transparent text-gray-600 hover:text-primary" data-type="channel">渠道</button>
+                <button class="promo-table-tab px-4 py-2 border-b-2 border-transparent text-gray-600 hover:text-primary" data-type="mechanism">机制</button>
+            </div>
+            <!-- 表格区 -->
+            <div id="promo-table-content"></div>
+        <script>
+        // 模拟数据
+        const promoWeeks = ['第1周', '第2周', '第3周', '第4周', '第5周', '第6周'];
+        const promoData = {
+            trend: {
+                activityGMV: [80000, 90000, 95000, 92000, 100000, 110000],
+                totalGMV: [120000, 135000, 150000, 140000, 160000, 170000],
+                subsidy: [8000, 9000, 9500, 9200, 10000, 11000],
+                activityRate: [10, 10, 10, 10, 10, 10], // 补贴/活动GMV
+                totalRate: [6.7, 6.7, 6.3, 6.6, 6.3, 6.5] // 补贴/全量GMV
+            },
+            overallTable: [
+                // 周、活动gmv、活动gmv同比、活动gmv环比、活动gmv占比、活动gmv占比同比、活动gmv占比环比、全量gmv、全量gmv同比、全量gmv环比、核销金额、核销金额同比、核销金额环比、活动费比、活动费比同比、活动费比环比、全量费比、全量费比同比、全量费比环比、补贴费用
+                {周:'第1周', 活动GMV:80000, 活动GMV同比:'-', 活动GMV环比:'-', 活动GMV占比:'66.7%', 活动GMV占比同比:'-', 活动GMV占比环比:'-', 全量GMV:120000, 全量GMV同比:'-', 全量GMV环比:'-', 核销金额:8000, 核销金额同比:'-', 核销金额环比:'-', 活动费比:'10.0%', 活动费比同比:'-', 活动费比环比:'-', 全量费比:'6.7%', 全量费比同比:'-', 全量费比环比:'-', 补贴费用:8000},
+                {周:'第2周', 活动GMV:90000, 活动GMV同比:'12.5%', 活动GMV环比:'12.5%', 活动GMV占比:'66.7%', 活动GMV占比同比:'0.0%', 活动GMV占比环比:'0.0%', 全量GMV:135000, 全量GMV同比:'12.5%', 全量GMV环比:'12.5%', 核销金额:9000, 核销金额同比:'12.5%', 核销金额环比:'12.5%', 活动费比:'10.0%', 活动费比同比:'0.0%', 活动费比环比:'0.0%', 全量费比:'6.7%', 全量费比同比:'0.0%', 全量费比环比:'0.0%', 补贴费用:9000},
+                {周:'第3周', 活动GMV:95000, 活动GMV同比:'5.6%', 活动GMV环比:'5.6%', 活动GMV占比:'63.3%', 活动GMV占比同比:'-5.1%', 活动GMV占比环比:'-5.1%', 全量GMV:150000, 全量GMV同比:'11.1%', 全量GMV环比:'11.1%', 核销金额:9500, 核销金额同比:'5.6%', 核销金额环比:'5.6%', 活动费比:'10.0%', 活动费比同比:'0.0%', 活动费比环比:'0.0%', 全量费比:'6.3%', 全量费比同比:'-6.0%', 全量费比环比:'-6.0%', 补贴费用:9500},
+                {周:'第4周', 活动GMV:92000, 活动GMV同比:'-3.2%', 活动GMV环比:'-3.2%', 活动GMV占比:'65.7%', 活动GMV占比同比:'3.8%', 活动GMV占比环比:'3.8%', 全量GMV:140000, 全量GMV同比:'-6.7%', 全量GMV环比:'-6.7%', 核销金额:9200, 核销金额同比:'-3.2%', 核销金额环比:'-3.2%', 活动费比:'10.0%', 活动费比同比:'0.0%', 活动费比环比:'0.0%', 全量费比:'6.6%', 全量费比同比:'4.8%', 全量费比环比:'4.8%', 补贴费用:9200},
+                {周:'第5周', 活动GMV:100000, 活动GMV同比:'8.7%', 活动GMV环比:'8.7%', 活动GMV占比:'62.5%', 活动GMV占比同比:'-4.9%', 活动GMV占比环比:'-4.9%', 全量GMV:160000, 全量GMV同比:'14.3%', 全量GMV环比:'14.3%', 核销金额:10000, 核销金额同比:'8.7%', 核销金额环比:'8.7%', 活动费比:'10.0%', 活动费比同比:'0.0%', 活动费比环比:'0.0%', 全量费比:'6.3%', 全量费比同比:'-4.5%', 全量费比环比:'-4.5%', 补贴费用:10000},
+                {周:'第6周', 活动GMV:110000, 活动GMV同比:'10.0%', 活动GMV环比:'10.0%', 活动GMV占比:'64.7%', 活动GMV占比同比:'3.5%', 活动GMV占比环比:'3.5%', 全量GMV:170000, 全量GMV同比:'6.3%', 全量GMV环比:'6.3%', 核销金额:11000, 核销金额同比:'10.0%', 核销金额环比:'10.0%', 活动费比:'10.0%', 活动费比同比:'0.0%', 活动费比环比:'0.0%', 全量费比:'6.5%', 全量费比同比:'3.2%', 全量费比环比:'3.2%', 补贴费用:11000}
+            ],
+            channelTable: [
+                // 类型、活动gmv、活动gmv占比、活动gmv同比、活动gmv环比、活动gmv占比同比、活动gmv占比环比、全量gmv、全量gmv占比、全量gmv同比、全量gmv环比、核销金额、核销金额占比、核销金额同比、核销金额环比、活动费比、活动费比同比、活动费比环比、全量费比、全量费比同比、全量费比环比、补贴费用
+                {类型:'渠道A', 活动GMV:30000, 活动GMV占比:'33.3%', 活动GMV同比:'-', 活动GMV环比:'-', 活动GMV占比同比:'-', 活动GMV占比环比:'-', 全量GMV:40000, 全量GMV占比:'33.3%', 全量GMV同比:'-', 全量GMV环比:'-', 核销金额:3000, 核销金额占比:'37.5%', 核销金额同比:'-', 核销金额环比:'-', 活动费比:'10.0%', 活动费比同比:'-', 活动费比环比:'-', 全量费比:'7.5%', 全量费比同比:'-', 全量费比环比:'-', 补贴费用:3000},
+                {类型:'渠道B', 活动GMV:60000, 活动GMV占比:'66.7%', 活动GMV同比:'-', 活动GMV环比:'-', 活动GMV占比同比:'-', 活动GMV占比环比:'-', 全量GMV:80000, 全量GMV占比:'66.7%', 全量GMV同比:'-', 全量GMV环比:'-', 核销金额:5000, 核销金额占比:'62.5%', 核销金额同比:'-', 核销金额环比:'-', 活动费比:'8.3%', 活动费比同比:'-', 活动费比环比:'-', 全量费比:'6.3%', 全量费比同比:'-', 全量费比环比:'-', 补贴费用:5000}
+            ],
+            mechanismTable: [
+                // 类型、活动gmv、活动gmv占比、活动gmv同比、活动gmv环比、活动gmv占比同比、活动gmv占比环比、全量gmv、全量gmv占比、全量gmv同比、全量gmv环比、核销金额、核销金额占比、核销金额同比、核销金额环比、活动费比、活动费比同比、活动费比环比、全量费比、全量费比同比、全量费比环比、补贴费用
+                {类型:'满减', 活动GMV:50000, 活动GMV占比:'55.6%', 活动GMV同比:'-', 活动GMV环比:'-', 活动GMV占比同比:'-', 活动GMV占比环比:'-', 全量GMV:90000, 全量GMV占比:'60.0%', 全量GMV同比:'-', 全量GMV环比:'-', 核销金额:6000, 核销金额占比:'54.5%', 核销金额同比:'-', 核销金额环比:'-', 活动费比:'12.0%', 活动费比同比:'-', 活动费比环比:'-', 全量费比:'6.7%', 全量费比同比:'-', 全量费比环比:'-', 补贴费用:6000},
+                {类型:'折扣', 活动GMV:40000, 活动GMV占比:'44.4%', 活动GMV同比:'-', 活动GMV环比:'-', 活动GMV占比同比:'-', 活动GMV占比环比:'-', 全量GMV:60000, 全量GMV占比:'40.0%', 全量GMV同比:'-', 全量GMV环比:'-', 核销金额:5000, 核销金额占比:'45.5%', 核销金额同比:'-', 核销金额环比:'-', 活动费比:'10.0%', 活动费比同比:'-', 活动费比环比:'-', 全量费比:'8.3%', 全量费比同比:'-', 全量费比环比:'-', 补贴费用:5000}
+            ]
+        };
+
+        // 变化趋势图
+        const promoTrendCtx = document.getElementById('promoTrendChart').getContext('2d');
+        const promoTrendChart = new Chart(promoTrendCtx, {
+            type: 'bar',
+            data: {
+                labels: promoWeeks,
+                datasets: [
+                    {
+                        type: 'bar',
+                        label: '核销金额',
+                        data: promoData.trend.subsidy,
+                        backgroundColor: '#F5222D',
+                        yAxisID: 'y',
+                        barPercentage: 0.4,
+                        categoryPercentage: 0.7
+                    },
+                    {
+                        type: 'bar',
+                        label: '活动GMV',
+                        data: promoData.trend.activityGMV,
+                        backgroundColor: '#165DFF',
+                        yAxisID: 'y',
+                        barPercentage: 0.4,
+                        categoryPercentage: 0.7
+                    },
+                    {
+                        type: 'bar',
+                        label: '全量GMV',
+                        data: promoData.trend.totalGMV,
+                        backgroundColor: '#36CFC9',
+                        yAxisID: 'y',
+                        barPercentage: 0.4,
+                        categoryPercentage: 0.7
+                    },
+                    {
+                        type: 'line',
+                        label: '活动费比',
+                        data: promoData.trend.activityRate,
+                        borderColor: '#FF7D00',
+                        backgroundColor: '#FF7D0022',
+                        yAxisID: 'y1',
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#FF7D00',
+                        pointStyle: 'line'
+                    },
+                    {
+                        type: 'line',
+                        label: '全量费比',
+                        data: promoData.trend.totalRate,
+                        borderColor: '#F5222D',
+                        backgroundColor: '#F5222D22',
+                        yAxisID: 'y1',
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#F5222D',
+                        pointStyle: 'line'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: { usePointStyle: true, pointStyle: 'line' }
+                    }
+                },
+                interaction: { mode: 'index', intersect: false },
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: { display: true, text: '金额' }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: { display: true, text: '费比(%)' },
+                        grid: { drawOnChartArea: false },
+                        ticks: { callback: v => v + '%' }
+                    }
+                }
+            }
+        });
+
+        // 表格切换与渲染
+        const promoTableTabs = document.querySelectorAll('.promo-table-tab');
+        const promoTableContent = document.getElementById('promo-table-content');
+        let promoTableType = 'overall';
+
+        function renderPromoTable(type) {
+            let html = '';
+            if (type === 'overall') {
+                // 整体表头
+                html += `<div class="overflow-x-auto"><table class="min-w-full text-sm border rounded-lg overflow-hidden"><thead><tr class="bg-neutral-light">`;
+                html += `<th class="px-3 py-2">周</th><th class="px-3 py-2">活动GMV</th><th class="px-3 py-2">同比</th><th class="px-3 py-2">环比</th><th class="px-3 py-2">活动GMV占全量GMV比例</th><th class="px-3 py-2">同比</th><th class="px-3 py-2">环比</th><th class="px-3 py-2">全量GMV</th><th class="px-3 py-2">同比</th><th class="px-3 py-2">环比</th><th class="px-3 py-2">核销金额</th><th class="px-3 py-2">同比</th><th class="px-3 py-2">环比</th><th class="px-3 py-2">活动费比</th><th class="px-3 py-2">同比</th><th class="px-3 py-2">环比</th><th class="px-3 py-2">全量费比</th><th class="px-3 py-2">同比</th><th class="px-3 py-2">环比</th><th class="px-3 py-2">补贴费用</th>`;
+                html += `</tr></thead><tbody>`;
+                promoData.overallTable.forEach(row => {
+                    html += `<tr class="border-b">`;
+                    html += `<td class="px-3 py-2">${row.周}</td><td class="px-3 py-2">${row.活动GMV}</td><td class="px-3 py-2">${row.活动GMV同比}</td><td class="px-3 py-2">${row.活动GMV环比}</td><td class="px-3 py-2">${row.活动GMV占比}</td><td class="px-3 py-2">${addPP(row.活动GMV占比同比)}</td><td class="px-3 py-2">${addPP(row.活动GMV占比环比)}</td><td class="px-3 py-2">${row.全量GMV}</td><td class="px-3 py-2">${row.全量GMV同比}</td><td class="px-3 py-2">${row.全量GMV环比}</td><td class="px-3 py-2">${row.核销金额}</td><td class="px-3 py-2">${row.核销金额同比}</td><td class="px-3 py-2">${row.核销金额环比}</td><td class="px-3 py-2">${row.活动费比}</td><td class="px-3 py-2">${addPP(row.活动费比同比)}</td><td class="px-3 py-2">${addPP(row.活动费比环比)}</td><td class="px-3 py-2">${row.全量费比 || '-'}</td><td class="px-3 py-2">${addPP(row.全量费比同比)}</td><td class="px-3 py-2">${addPP(row.全量费比环比)}</td><td class="px-3 py-2">${row.补贴费用}</td>`;
+                    html += `</tr>`;
+                });
+                html += `</tbody></table></div>`;
+            } else if (type === 'channel' || type === 'mechanism') {
+                // 渠道/机制表头
+                html += `<div class="overflow-x-auto"><table class="min-w-full text-sm border rounded-lg overflow-hidden"><thead><tr class="bg-neutral-light">`;
+                html += `<th class="px-3 py-2">${type==='channel'?'渠道':'机制'}</th><th class="px-3 py-2">活动GMV</th><th class="px-3 py-2">占比</th><th class="px-3 py-2">同比</th><th class="px-3 py-2">环比</th><th class="px-3 py-2">活动GMV占全量GMV比例</th><th class="px-3 py-2">同比</th><th class="px-3 py-2">环比</th><th class="px-3 py-2">全量GMV</th><th class="px-3 py-2">占比</th><th class="px-3 py-2">同比</th><th class="px-3 py-2">环比</th><th class="px-3 py-2">核销金额</th><th class="px-3 py-2">占比</th><th class="px-3 py-2">同比</th><th class="px-3 py-2">环比</th><th class="px-3 py-2">活动费比</th><th class="px-3 py-2">同比</th><th class="px-3 py-2">环比</th><th class="px-3 py-2">全量费比</th><th class="px-3 py-2">同比</th><th class="px-3 py-2">环比</th><th class="px-3 py-2">补贴费用</th>`;
+                html += `</tr></thead><tbody>`;
+                const tableData = type==='channel'?promoData.channelTable:promoData.mechanismTable;
+                tableData.forEach(row => {
+                    // 动态计算活动GMV占全量GMV比例
+                    let actGmv = Number(row.活动GMV)||0;
+                    let totalGmv = Number(row.全量GMV)||0;
+                    let actGmvRate = totalGmv > 0 ? ((actGmv/totalGmv*100).toFixed(1)+'%') : '-';
+                    html += `<tr class="border-b">`;
+                    html += `<td class="px-3 py-2">${row.类型}</td><td class="px-3 py-2">${row.活动GMV}</td><td class="px-3 py-2">${row.活动GMV占比}</td><td class="px-3 py-2">${row.活动GMV同比}</td><td class="px-3 py-2">${row.活动GMV环比}</td><td class="px-3 py-2">${actGmvRate}</td><td class="px-3 py-2">${addPP(row.活动GMV占比同比)}</td><td class="px-3 py-2">${addPP(row.活动GMV占比环比)}</td><td class="px-3 py-2">${row.全量GMV}</td><td class="px-3 py-2">${row.全量GMV占比}</td><td class="px-3 py-2">${row.全量GMV同比}</td><td class="px-3 py-2">${row.全量GMV环比}</td><td class="px-3 py-2">${row.核销金额}</td><td class="px-3 py-2">${row.核销金额占比}</td><td class="px-3 py-2">${row.核销金额同比}</td><td class="px-3 py-2">${row.核销金额环比}</td><td class="px-3 py-2">${row.活动费比}</td><td class="px-3 py-2">${addPP(row.活动费比同比)}</td><td class="px-3 py-2">${addPP(row.活动费比环比)}</td><td class="px-3 py-2">${row.全量费比 || '-'}</td><td class="px-3 py-2">${addPP(row.全量费比同比)}</td><td class="px-3 py-2">${addPP(row.全量费比环比)}</td><td class="px-3 py-2">${row.补贴费用}</td>`;
+                    html += `</tr>`;
+                });
+                html += `</tbody></table></div>`;
+            }
+            promoTableContent.innerHTML = html;
+        }
+
+        // 辅助函数：为率类同比环比加pp单位
+        function addPP(val) {
+            if (!val || val === '-') return val;
+            // 只对百分号结尾的值加pp
+            if (typeof val === 'string' && val.endsWith('%')) {
+                return val.replace('%', 'pp');
+            }
+            return val;
+        }
+
+        // 切换逻辑
+        promoTableTabs.forEach(btn => {
+            btn.addEventListener('click', function() {
+                promoTableTabs.forEach(b => b.classList.remove('border-primary', 'text-primary', 'font-medium'));
+                this.classList.add('border-primary', 'text-primary', 'font-medium');
+                promoTableType = this.dataset.type;
+                renderPromoTable(promoTableType);
+            });
+        });
+
+        // 默认渲染
+        renderPromoTable(promoTableType);
+        // 窗口resize自适应
+        window.addEventListener('resize', () => {
+            promoTrendChart.resize();
+        });
+        </script>
+        </section>
+
+        <!-- RTB分析区 -->
+        <section class="bg-white rounded-xl shadow-card p-5 mb-6">
+            <h2 class="text-lg font-semibold mb-4 flex items-center">
+                <i class="fa fa-bolt text-primary mr-2"></i> RTB分析
+            </h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- 指标卡片区 -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- 引导GMV卡片 -->
+                    <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-primary card-hover">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-sm text-gray-500">引导GMV</p>
+                                <h3 class="text-2xl font-bold mt-1">¥56,800</h3>
+                                <div class="flex items-center mt-2 text-sm">
+                                    <span class="text-success flex items-center">
+                                        <i class="fa fa-arrow-up mr-1"></i> 12.5%
+                                    </span>
+                                    <span class="text-gray-500 ml-2">同比</span>
+                                    <span class="text-danger flex items-center ml-4">
+                                        <i class="fa fa-arrow-down mr-1"></i> 3.2%
+                                    </span>
+                                    <span class="text-gray-500 ml-2">环比</span>
+                                </div>
+                            </div>
+                            <div class="bg-primary/10 p-2 rounded-md">
+                                <i class="fa fa-money text-primary"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 核销金额卡片 -->
+                    <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-accent card-hover">
+                        <div class="flex justify-between items-start">
+                            <div class="w-full">
+                                <p class="text-sm text-gray-500">核销金额</p>
+                                <h3 class="text-2xl font-bold mt-1">¥12,000
+                                    <span class="text-xs text-gray-500 font-normal ml-2">/ 预算 ¥15,000</span>
+                                </h3>
+                                <div class="w-full bg-neutral-light rounded-full h-2 mt-2">
+                                    <div class="bg-accent h-2 rounded-full" style="width:80%"></div>
+                                </div>
+                                <div class="flex items-center justify-between mt-1 text-xs text-gray-500">
+                                    <span>进度：80%</span>
+                                    <span class="text-success flex items-center">
+                                        <i class="fa fa-arrow-up mr-1"></i> 10.0%
+                                    </span>
+                                    <span>同比</span>
+                                    <span class="text-danger flex items-center ml-2">
+                                        <i class="fa fa-arrow-down mr-1"></i> 2.5%
+                                    </span>
+                                    <span>环比</span>
+                                </div>
+                            </div>
+                            <div class="bg-accent/10 p-2 rounded-md">
+                                <i class="fa fa-rmb text-accent"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 千次曝光成本卡片 -->
+                    <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-warning card-hover">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-sm text-gray-500">千次曝光成本</p>
+                                <h3 class="text-2xl font-bold mt-1">¥8.50</h3>
+                                <div class="flex items-center mt-2 text-sm">
+                                    <span class="text-success flex items-center">
+                                        <i class="fa fa-arrow-up mr-1"></i> 5.2%
+                                    </span>
+                                    <span class="text-gray-500 ml-2">同比</span>
+                                    <span class="text-success flex items-center ml-4">
+                                        <i class="fa fa-arrow-up mr-1"></i> 1.8%
+                                    </span>
+                                    <span class="text-gray-500 ml-2">环比</span>
+                                </div>
+                            </div>
+                            <div class="bg-warning/10 p-2 rounded-md">
+                                <i class="fa fa-eye text-warning"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 点击成本卡片 -->
+                    <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-secondary card-hover">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-sm text-gray-500">点击成本</p>
+                                <h3 class="text-2xl font-bold mt-1">¥0.85</h3>
+                                <div class="flex items-center mt-2 text-sm">
+                                    <span class="text-danger flex items-center">
+                                        <i class="fa fa-arrow-down mr-1"></i> 2.1%
+                                    </span>
+                                    <span class="text-gray-500 ml-2">同比</span>
+                                    <span class="text-success flex items-center ml-4">
+                                        <i class="fa fa-arrow-up mr-1"></i> 0.5%
+                                    </span>
+                                    <span class="text-gray-500 ml-2">环比</span>
+                                </div>
+                            </div>
+                            <div class="bg-secondary/10 p-2 rounded-md">
+                                <i class="fa fa-mouse-pointer text-secondary"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 漏斗图区 -->
+                <div class="flex flex-col items-center justify-center h-full">
+                    <h3 class="text-base font-semibold mb-2 flex items-center"><i class="fa fa-filter text-primary mr-2"></i>订单转化情况</h3>
+                    <div class="w-full h-96 flex items-center justify-center">
+                        <canvas id="rtbFunnelChart" style="max-width:340px;"></canvas>
+                    </div>
+                </div>
+            </div>
+            <script>
+            // 模拟数据
+            const rtbFunnelData = {
+                exposure: 120000,
+                click: 8000,
+                order: 1000
+            };
+            // 计算转化率
+            const clickRate = rtbFunnelData.exposure > 0 ? (rtbFunnelData.click/rtbFunnelData.exposure*100).toFixed(2) : 0;
+            const orderRate = rtbFunnelData.click > 0 ? (rtbFunnelData.order/rtbFunnelData.click*100).toFixed(2) : 0;
+            // Chart.js 漏斗图实现（用bar模拟）
+            const funnelLabels = ['曝光数', '点击数', '订单数'];
+            const funnelValues = [rtbFunnelData.exposure, rtbFunnelData.click, rtbFunnelData.order];
+            const funnelColors = ['#FF7D00', '#36CFC9', '#165DFF'];
+            const ctxFunnel = document.getElementById('rtbFunnelChart').getContext('2d');
+            new Chart(ctxFunnel, {
+                type: 'bar',
+                data: {
+                    labels: funnelLabels,
+                    datasets: [{
+                        label: '数量',
+                        data: funnelValues,
+                        backgroundColor: funnelColors,
+                        borderRadius: 30,
+                        barPercentage: 0.6,
+                        categoryPercentage: 0.7
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label + ': ' + context.parsed.x;
+                                    if(context.dataIndex === 1) {
+                                        label += `（点击率：${clickRate}%）`;
+                                    }
+                                    if(context.dataIndex === 2) {
+                                        label += `（订单转化率：${orderRate}%）`;
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    if(value >= 10000) return (value/10000).toFixed(1)+'万';
+                                    return value;
+                                }
+                            }
+                        },
+                        y: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+            </script>
+        
+            <!-- 商品维度表格 -->
+            <div class="mt-8">
+                <h3 class="text-base font-semibold mb-4 flex items-center"><i class="fa fa-shopping-bag text-primary mr-2"></i>商品</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm border rounded-lg overflow-hidden">
+                        <thead>
+                            <tr class="bg-neutral-light">
+                                <th class="px-3 py-2 sticky left-0 bg-neutral-light">UPC</th>
+                                <th class="px-3 py-2 sticky left-[100px] bg-neutral-light">商品名称</th>
+                                <th class="px-3 py-2">曝光数</th>
+                                <th class="px-3 py-2">点击率</th>
+                                <th class="px-3 py-2">点击数</th>
+                                <th class="px-3 py-2">订单转化率</th>
+                                <th class="px-3 py-2">订单量</th>
+                                <th class="px-3 py-2">引导GMV</th>
+                                <th class="px-3 py-2">预算金额</th>
+                                <th class="px-3 py-2">预算消耗进度</th>
+                                <th class="px-3 py-2">消耗金额</th>
+                                <th class="px-3 py-2">千次曝光成本</th>
+                                <th class="px-3 py-2">点击成本</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="px-3 py-2 sticky left-0 bg-white">6901234567890</td>
+                                <td class="px-3 py-2 sticky left-[100px] bg-white">可口可乐330ml</td>
+                                <td class="px-3 py-2">45,600</td>
+                                <td class="px-3 py-2">6.8%</td>
+                                <td class="px-3 py-2">3,100</td>
+                                <td class="px-3 py-2">12.5%</td>
+                                <td class="px-3 py-2">388</td>
+                                <td class="px-3 py-2">¥10,850</td>
+                                <td class="px-3 py-2">¥3,000</td>
+                                <td class="px-3 py-2">
+                                    <div class="flex items-center">
+                                        <div class="w-24 bg-neutral-light rounded-full h-2 mr-2">
+                                            <div class="bg-primary h-2 rounded-full" style="width:85%"></div>
+                                        </div>
+                                        <span>85%</span>
+                                    </div>
+                                </td>
+                                <td class="px-3 py-2">¥2,550</td>
+                                <td class="px-3 py-2">¥5.59</td>
+                                <td class="px-3 py-2">¥0.82</td>
+                            </tr>
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="px-3 py-2 sticky left-0 bg-white">6901234567891</td>
+                                <td class="px-3 py-2 sticky left-[100px] bg-white">百事可乐500ml</td>
+                                <td class="px-3 py-2">38,200</td>
+                                <td class="px-3 py-2">5.9%</td>
+                                <td class="px-3 py-2">2,254</td>
+                                <td class="px-3 py-2">10.2%</td>
+                                <td class="px-3 py-2">230</td>
+                                <td class="px-3 py-2">¥8,050</td>
+                                <td class="px-3 py-2">¥2,500</td>
+                                <td class="px-3 py-2">
+                                    <div class="flex items-center">
+                                        <div class="w-24 bg-neutral-light rounded-full h-2 mr-2">
+                                            <div class="bg-primary h-2 rounded-full" style="width:72%"></div>
+                                        </div>
+                                        <span>72%</span>
+                                    </div>
+                                </td>
+                                <td class="px-3 py-2">¥1,800</td>
+                                <td class="px-3 py-2">¥4.71</td>
+                                <td class="px-3 py-2">¥0.80</td>
+                            </tr>
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="px-3 py-2 sticky left-0 bg-white">6901234567892</td>
+                                <td class="px-3 py-2 sticky left-[100px] bg-white">雪碧600ml</td>
+                                <td class="px-3 py-2">32,500</td>
+                                <td class="px-3 py-2">7.2%</td>
+                                <td class="px-3 py-2">2,340</td>
+                                <td class="px-3 py-2">13.8%</td>
+                                <td class="px-3 py-2">323</td>
+                                <td class="px-3 py-2">¥9,690</td>
+                                <td class="px-3 py-2">¥2,800</td>
+                                <td class="px-3 py-2">
+                                    <div class="flex items-center">
+                                        <div class="w-24 bg-neutral-light rounded-full h-2 mr-2">
+                                            <div class="bg-primary h-2 rounded-full" style="width:90%"></div>
+                                        </div>
+                                        <span>90%</span>
+                                    </div>
+                                </td>
+                                <td class="px-3 py-2">¥2,520</td>
+                                <td class="px-3 py-2">¥7.75</td>
+                                <td class="px-3 py-2">¥1.08</td>
+                            </tr>
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="px-3 py-2 sticky left-0 bg-white">6901234567893</td>
+                                <td class="px-3 py-2 sticky left-[100px] bg-white">芬达橙味500ml</td>
+                                <td class="px-3 py-2">28,900</td>
+                                <td class="px-3 py-2">6.5%</td>
+                                <td class="px-3 py-2">1,879</td>
+                                <td class="px-3 py-2">9.8%</td>
+                                <td class="px-3 py-2">184</td>
+                                <td class="px-3 py-2">¥5,520</td>
+                                <td class="px-3 py-2">¥2,000</td>
+                                <td class="px-3 py-2">
+                                    <div class="flex items-center">
+                                        <div class="w-24 bg-neutral-light rounded-full h-2 mr-2">
+                                            <div class="bg-primary h-2 rounded-full" style="width:65%"></div>
+                                        </div>
+                                        <span>65%</span>
+                                    </div>
+                                </td>
+                                <td class="px-3 py-2">¥1,300</td>
+                                <td class="px-3 py-2">¥4.50</td>
+                                <td class="px-3 py-2">¥0.69</td>
+                            </tr>
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="px-3 py-2 sticky left-0 bg-white">6901234567894</td>
+                                <td class="px-3 py-2 sticky left-[100px] bg-white">美年达葡萄味600ml</td>
+                                <td class="px-3 py-2">25,800</td>
+                                <td class="px-3 py-2">5.8%</td>
+                                <td class="px-3 py-2">1,496</td>
+                                <td class="px-3 py-2">8.9%</td>
+                                <td class="px-3 py-2">133</td>
+                                <td class="px-3 py-2">¥3,990</td>
+                                <td class="px-3 py-2">¥1,800</td>
+                                <td class="px-3 py-2">
+                                    <div class="flex items-center">
+                                        <div class="w-24 bg-neutral-light rounded-full h-2 mr-2">
+                                            <div class="bg-primary h-2 rounded-full" style="width:55%"></div>
+                                        </div>
+                                        <span>55%</span>
+                                    </div>
+                                </td>
+                                <td class="px-3 py-2">¥990</td>
+                                <td class="px-3 py-2">¥3.84</td>
+                                <td class="px-3 py-2">¥0.66</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <script>
+                // 为商品表格添加交互功能
+                document.addEventListener('DOMContentLoaded', function() {
+                    const productRows = document.querySelectorAll('table tbody tr');
+                    productRows.forEach(row => {
+                        row.addEventListener('click', function() {
+                            productRows.forEach(r => r.classList.remove('bg-blue-50'));
+                            this.classList.add('bg-blue-50');
+                        });
+                    });
+                });
+            </script>
+        </section>
+        
+        <!--供给分析区-->
+
+    </main>
+</body>
+</html>
+        
