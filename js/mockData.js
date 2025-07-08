@@ -168,14 +168,11 @@ const mockData = {
 
         const tableHeaders = { top: topHeader, bottom: bottomHeader };
 
-        // 为每个周次生成一行数据
-        const base = baseDate ? dayjs(baseDate) : dayjs();
-        for (let i = weeks - 1; i >= 0; i--) {
-            // 从基准日期的前一天开始，往前推i周
-            const weekDate = base.subtract(1, 'day').subtract(i, 'weeks');
-            const weekNum = weekDate.isoWeek();
-            const year = weekDate.year();
-            const weekKey = `${year}-W${weekNum}`;
+        // 为每个周次生成一行数据 - 使用固定的8周数据，从2025-W21到2025-W28
+        const fixedWeeks = ['2025-W21', '2025-W22', '2025-W23', '2025-W24', '2025-W25', '2025-W26', '2025-W27', '2025-W28'];
+
+        for (let i = 0; i < weeks; i++) {
+            const weekKey = fixedWeeks[i] || `2025-W${21 + i}`;
             const rowData = { week: weekKey };
 
             // 计算该周所有维度项目的总GMV用于占比计算

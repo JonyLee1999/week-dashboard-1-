@@ -614,16 +614,14 @@ function createSimpleTestTable(table, baseDate = null) {
     // 创建表格主体
     const tbody = document.createElement('tbody');
 
-    // 添加测试数据行
-    const base = baseDate ? dayjs(baseDate) : dayjs();
-    for (let i = 14; i >= 0; i--) {
+    // 添加测试数据行 - 使用固定的15周数据，从2025-W14到2025-W28
+    for (let i = 0; i < 15; i++) {
         const tr = document.createElement('tr');
 
         // 周次列
         const weekTd = document.createElement('td');
-        // 从基准日期的前一天开始，往前推i周
-        const weekDate = base.subtract(1, 'day').subtract(i, 'week');
-        weekTd.textContent = `${weekDate.year()}-W${weekDate.isoWeek()}`;
+        const weekNum = 14 + i; // 从W14开始到W28
+        weekTd.textContent = `2025-W${weekNum}`;
         weekTd.className = 'text-center fw-bold';
         tr.appendChild(weekTd);
 
@@ -676,12 +674,11 @@ function updateActivityDetailDataTable(baseDate = null) {
     // 清空表格内容
     tbody.innerHTML = '';
 
-    // 生成6周的数据
-    const base = baseDate ? dayjs(baseDate) : dayjs();
-    for (let i = 5; i >= 0; i--) {
-        // 从基准日期的前一天开始，往前推i周
-        const weekDate = base.subtract(1, 'day').subtract(i, 'week');
-        const weekLabel = `${weekDate.year()}-W${weekDate.isoWeek()}`;
+    // 生成6周的数据：2025-W23到2025-W28
+    const fixedWeeks = ['2025-W23', '2025-W24', '2025-W25', '2025-W26', '2025-W27', '2025-W28'];
+
+    for (let i = 0; i < 6; i++) {
+        const weekLabel = fixedWeeks[i];
 
         const tr = document.createElement('tr');
 
@@ -3728,9 +3725,11 @@ function updateSupplyTrendChart(metric, metricName) {
         // 判断是否为百分比指标
         const isPercentageMetric = ['storeSalesRate', 'skuStorePenetration', 'skuSelloutRate'].includes(metric);
 
-        for (let i = 5; i >= 0; i--) {
-            const weekDate = dayjs().subtract(i, 'week');
-            weeks.push(`${weekDate.year()}-W${weekDate.isoWeek()}`);
+        // 使用固定的周次标签：2025-W23到2025-W28
+        const fixedWeeks = ['2025-W23', '2025-W24', '2025-W25', '2025-W26', '2025-W27', '2025-W28'];
+
+        for (let i = 0; i < 6; i++) {
+            weeks.push(fixedWeeks[i]);
 
             // 根据指标类型生成不同的数据
             let baseValue;
@@ -3795,9 +3794,11 @@ function updateRtbTrendChart(metric, metricName) {
         const values = [];
         const wowValues = [];
 
-        for (let i = 5; i >= 0; i--) {
-            const weekDate = dayjs().subtract(i, 'week');
-            weeks.push(`${weekDate.year()}-W${weekDate.isoWeek()}`);
+        // 使用固定的周次标签：2025-W23到2025-W28
+        const fixedWeeks = ['2025-W23', '2025-W24', '2025-W25', '2025-W26', '2025-W27', '2025-W28'];
+
+        for (let i = 0; i < 6; i++) {
+            weeks.push(fixedWeeks[i]);
 
             // 根据指标类型生成不同的数据
             let baseValue;
