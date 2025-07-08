@@ -170,18 +170,24 @@ body {
 
 .main-content {
     flex: 1;
-    padding: 1.5rem;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
 }
 
 .content-wrapper {
-    display: flex;
-    gap: 1.5rem;
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 1rem;
+    flex: 1;
+    min-height: 0;
 }
 
 /* 侧边栏 */
 .domain-sidebar {
-    width: 220px;
-    flex-shrink: 0;
+    width: 200px;
+    flex: 0 0 200px;
+    min-width: 200px;
 }
 .domain-sidebar .card {
     height: 100%;
@@ -219,7 +225,9 @@ body {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1rem;
+    overflow-y: auto;
+    min-height: 0;
 }
 
 /* 平台 Tabs (分段控制器) */
@@ -309,10 +317,6 @@ body {
 }
 
 /* DataTables 滚动条和固定列样式美化 */
-.dataTables_scrollBody {
-    scrollbar-width: thin; /* For Firefox */
-    scrollbar-color: #d1d5db transparent; /* For Firefox */
-}
 .dataTables_scrollBody::-webkit-scrollbar {
     width: 6px;
     height: 8px;
@@ -380,57 +384,7 @@ table.dataTable.dtfc-has-left-fixed-columns {
     gap: 0.5rem;
 }
 
-/* 内容包装器 */
-.content-wrapper {
-    display: flex;
-    gap: 1rem;
-    min-height: calc(100vh - 150px); /* 确保最小高度足够 */
-}
-
-/* 领域侧边栏 */
-.domain-sidebar {
-    width: 200px;
-    flex-shrink: 0;
-}
-
-.domain-sidebar .card {
-    height: 100%; /* 让卡片充满整个侧边栏高度 */
-}
-
-.domain-sidebar .card-body {
-    height: 100%; /* 让卡片内容区域充满整个卡片高度 */
-    display: flex;
-    flex-direction: column;
-}
-
-.domain-sidebar .nav-pills {
-    flex: 1; /* 让导航菜单占据剩余空间 */
-    display: flex;
-    flex-direction: column;
-}
-
-.domain-sidebar .nav-link {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1rem;
-    color: var(--text-color);
-    transition: all 0.3s;
-}
-
-.domain-sidebar .nav-link:hover {
-    background-color: rgba(24, 144, 255, 0.1);
-}
-
-.domain-sidebar .nav-link.active {
-    background-color: var(--primary-color);
-    color: white;
-}
-
-.domain-sidebar .nav-link i {
-    width: 20px;
-    text-align: center;
-}
+/* 简化的布局样式 */
 
 /* 主面板 */
 .main-panel {
@@ -657,28 +611,7 @@ table.dataTable.dtfc-has-left-fixed-columns {
     z-index: 9999;
 }
 
-/* 响应式设计 */
-@media (max-width: 992px) {
-    .content-wrapper {
-        flex-direction: column;
-    }
-
-    .domain-sidebar {
-        width: 100%;
-        margin-bottom: 1rem;
-    }
-
-    .domain-sidebar .nav-pills {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-    }
-
-    .domain-sidebar .nav-link {
-        flex: 1;
-        min-width: 150px;
-    }
-}
+/* 重复的响应式样式已删除，使用上面的响应式定义 */
 
 @media (max-width: 768px) {
     .data-display-container .row {
@@ -764,120 +697,42 @@ table.dataTable.dtfc-has-left-fixed-columns {
 }
 
 /* 周选择器样式 */
-.week-picker-wrapper {
-    width: 100%;
-    max-width: 400px;
+.input-group {
+    width: 200px;
 }
 
-.week-picker-wrapper .ant-picker {
-    width: 100%;
-    height: 38px;
-    border-radius: 4px;
-    border: 1px solid var(--border-color);
+.input-group .form-control {
+    border-right: 0;
 }
 
-.week-picker-wrapper .ant-picker:hover,
-.week-picker-wrapper .ant-picker:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+.input-group .input-group-text {
+    background-color: #fff;
+    border-left: 0;
 }
 
-.week-picker-wrapper .ant-picker-input > input {
-    font-size: 14px;
-}
-
-/* Ant Design 日期选择器下拉面板自定义样式 */
-.ant-picker-dropdown {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-}
-
-.ant-picker-cell-in-view.ant-picker-cell-selected .ant-picker-cell-inner {
-    background-color: var(--primary-color);
-}
-
-.ant-picker-cell-in-view.ant-picker-cell-today .ant-picker-cell-inner::before {
-    border-color: var(--primary-color);
-}
-
-/* 日期选择器样式 */
-.date-picker-container {
-    max-width: 400px;
-}
-
-.date-picker-container .input-group {
-    width: 100%;
+.input-group .form-control:focus + .input-group-text {
+    border-color: #86b7fe;
 }
 
 .flatpickr-calendar {
-    background: #fff;
+    background-color: #fff;
     border-radius: 4px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
-.flatpickr-day.selected,
-.flatpickr-day.startRange,
-.flatpickr-day.endRange,
-.flatpickr-day.selected.inRange,
-.flatpickr-day.startRange.inRange,
-.flatpickr-day.endRange.inRange,
-.flatpickr-day.selected:focus,
-.flatpickr-day.startRange:focus,
-.flatpickr-day.endRange:focus,
-.flatpickr-day.selected:hover,
-.flatpickr-day.startRange:hover,
-.flatpickr-day.endRange:hover,
-.flatpickr-day.selected.prevMonthDay,
-.flatpickr-day.startRange.prevMonthDay,
-.flatpickr-day.endRange.prevMonthDay,
-.flatpickr-day.selected.nextMonthDay,
-.flatpickr-day.startRange.nextMonthDay,
-.flatpickr-day.endRange.nextMonthDay {
-    background: var(--primary-color);
+.flatpickr-day.selected {
+    background-color: var(--primary-color);
     border-color: var(--primary-color);
 }
 
-.flatpickr-weekwrapper .flatpickr-weeks {
-    background: #f8f9fa;
-    border-right: 1px solid #e9ecef;
+.flatpickr-day:hover {
+    background-color: rgba(24, 144, 255, 0.1);
 }
 
-.flatpickr-weekwrapper .flatpickr-weekday {
-    color: var(--primary-color);
-}
-
-.flatpickr-current-month {
-    font-size: 1.1em;
-    padding: 8px 0;
-}
-
-.flatpickr-weekday {
-    font-weight: 600;
-    color: #666;
-}
-
-.flatpickr-day.today {
-    border-color: var(--primary-color);
-}
-
-.flatpickr-day.today:hover {
-    background: rgba(24, 144, 255, 0.1);
-    border-color: var(--primary-color);
-}
-
-/* 清除按钮样式 */
-#clearDateBtn {
-    border-color: #ced4da;
-}
-
-#clearDateBtn:hover {
-    background-color: #e9ecef;
-}
-
-/* 日期输入框样式 */
-#weekPicker {
+.flatpickr-weeks-indicator {
     background-color: #fff;
-    cursor: pointer;
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 /* 商品表现区域 */
@@ -903,4 +758,424 @@ table.dataTable.dtfc-has-left-fixed-columns {
 
 .product-performance-section .card {
     border-top-left-radius: 0;
-} 
+}
+
+/* 表格容器样式 */
+.table-responsive {
+    overflow-x: auto;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+    max-height: 400px;  /* 限制表格最大高度，防止页面被撑开 */
+    max-width: 100%;    /* 确保不会超出容器宽度 */
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    position: relative;
+}
+
+/* 固定表格高度，避免页面跳动 */
+.product-performance-section .card-body {
+    max-height: 550px;  /* 减小最大高度 */
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.product-performance-section .card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 表格样式优化 */
+.table {
+    margin-bottom: 0;
+    white-space: nowrap;  /* 防止内容换行 */
+    min-width: 100%;
+    table-layout: auto;   /* 让表格自动调整列宽 */
+    width: auto;          /* 允许表格根据内容调整宽度 */
+}
+
+/* 表格头部固定 */
+.table thead th {
+    position: sticky;
+    top: 0;
+    background-color: var(--bg-main);
+    z-index: 10;
+    border: 1px solid var(--border-color);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* 多级表头样式 */
+.table thead tr:first-child th {
+    background-color: var(--primary-color-light);
+    color: var(--primary-color-dark);
+    font-weight: 700;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.table thead tr:last-child th {
+    background-color: var(--bg-content-subtle);
+    color: var(--text-secondary);
+    font-weight: 500;
+    font-size: 0.85rem;
+}
+
+/* 滚动条样式美化 */
+.table-responsive::-webkit-scrollbar {
+    height: 10px;
+    width: 10px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 5px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 5px;
+    transition: background-color 0.2s ease;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-color-dark);
+}
+
+/* 表格响应式容器滚动条样式 */
+
+/* 图表容器固定高度 */
+.chart-wrapper {
+    height: 300px;
+    min-height: 300px;
+    max-height: 300px;
+    width: 100%;
+    overflow: hidden;
+}
+
+.product-performance-section .chart-wrapper {
+    height: 350px;
+    min-height: 350px;
+    max-height: 350px;
+}
+
+/* 主面板布局优化 */
+.main-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow: hidden;  /* 防止内容溢出 */
+    min-height: 0;     /* 允许flex子元素收缩 */
+}
+
+/* 卡片内容区域滚动 */
+.card-body {
+    overflow: hidden;  /* 防止卡片内容溢出 */
+}
+
+/* 维度表现区域布局 */
+.product-performance-section {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+}
+
+.product-performance-section .row {
+    flex: 1;
+    min-height: 0;
+}
+
+.product-performance-section .col-12 {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.product-performance-section .col-12 .table-responsive {
+    flex: 1;
+    min-height: 200px;
+    max-height: 350px;
+    width: 100%;
+    overflow: auto;
+}
+
+/* 确保表格不会撑开父容器 */
+.product-performance-section .col-12 {
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.product-performance-section .row {
+    max-width: 100%;
+    overflow: hidden;
+}
+
+/* 表格数值样式 */
+.table .positive {
+    color: var(--success-color) !important;
+    font-weight: 500;
+}
+
+.table .negative {
+    color: var(--danger-color) !important;
+    font-weight: 500;
+}
+
+/* DataTables包装器样式 */
+.dataTables_wrapper {
+    width: 100% !important;
+}
+
+.dataTables_wrapper .dataTables_scroll {
+    width: 100% !important;
+}
+
+.dataTables_wrapper .dataTables_scrollBody {
+    width: 100% !important;
+    max-height: 300px !important;
+    overflow-x: auto !important;
+    overflow-y: auto !important;
+}
+
+/* 防止DataTables撑开页面 */
+.dataTables_wrapper {
+    max-width: 100% !important;
+    overflow: hidden !important;
+}
+
+.dataTables_wrapper .dataTables_scroll {
+    max-width: 100% !important;
+    overflow: hidden !important;
+}
+
+/* 确保表格头部也不会撑开 */
+.dataTables_wrapper .dataTables_scrollHead {
+    overflow: hidden !important;
+}
+
+.dataTables_wrapper .dataTables_scrollHeadInner {
+    max-width: 100% !important;
+}
+
+.dataTables_wrapper .dataTables_scrollHeadInner table {
+    max-width: none !important;
+}
+
+/* 全局表格滑动容器样式 */
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    position: relative;
+    max-height: 500px; /* 限制表格最大高度 */
+    /* 移除已废弃的-webkit-overflow-scrolling属性 */
+}
+
+/* 交易数据表格容器 */
+#transaction-content .table-container {
+    max-height: 400px;
+    overflow-x: auto;
+    overflow-y: auto;
+}
+
+/* RTB明细数据表格容器 */
+#rtb-content .table-container {
+    max-height: 450px;
+    overflow-x: auto;
+    overflow-y: auto;
+}
+
+/* 供给明细数据表格容器 */
+#supply-content .table-container {
+    max-height: 450px;
+    overflow-x: auto;
+    overflow-y: auto;
+}
+
+/* 用户明细数据表格容器 */
+#user-content .table-container,
+#user-content .table-scroll-container {
+    max-height: 450px;
+    overflow-x: auto;
+    overflow-y: auto;
+}
+
+/* 用户数据明细表格样式 */
+#user-content .ant-table table {
+    min-width: 1200px;
+    white-space: nowrap;
+}
+
+/* 用户数据表格多级表头样式 */
+#user-content .ant-table thead tr:first-child th {
+    background-color: var(--primary-color-light);
+    color: var(--primary-color-dark);
+    font-weight: 700;
+    text-align: center;
+    border-bottom: 1px solid var(--border-color);
+}
+
+#user-content .ant-table thead tr:nth-child(2) th {
+    background-color: var(--bg-main);
+    font-weight: 600;
+    text-align: center;
+    border-bottom: 2px solid var(--border-color);
+}
+
+/* 表格样式优化 - 确保水平滚动 */
+.table {
+    margin-bottom: 0;
+    white-space: nowrap;  /* 防止内容换行 */
+    min-width: 100%;
+    table-layout: auto;   /* 让表格自动调整列宽 */
+    width: auto;          /* 允许表格根据内容调整宽度 */
+}
+
+/* 表格头部固定 */
+.table thead th {
+    position: sticky;
+    top: 0;
+    background-color: var(--bg-main);
+    z-index: 10;
+    border: 1px solid var(--border-color);
+    font-weight: 600;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+/* 滚动条样式美化 */
+.table-container::-webkit-scrollbar {
+    height: 10px;
+    width: 10px;
+}
+
+.table-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 5px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 5px;
+    transition: background-color 0.2s ease;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-color-dark);
+}
+
+/* 表格容器滚动条样式 */
+
+/* 图表容器固定高度 - 防止被表格撑开 */
+.chart-wrapper {
+    height: 300px;
+    min-height: 300px;
+    max-height: 300px;
+    width: 100%;
+    overflow: hidden;
+}
+
+/* 卡片内容区域 - 防止溢出 */
+.card-body {
+    overflow: hidden;
+}
+
+/* 确保表格不会撑开父容器 */
+.card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* 明细表格样式 */
+#simpleTable,
+#supplyDetailTable,
+#rtbDetailTable {
+    min-width: 1500px; /* 确保有足够的宽度显示所有列 */
+    width: auto;
+}
+
+/* Samsung Internet浏览器兼容性修复 */
+.metric-change,
+.metric-progress {
+    min-width: -webkit-fill-available;
+    min-width: -moz-available;
+    min-width: fill-available;
+}
+
+/* 可点击指标卡样式 */
+.clickable-metric {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.clickable-metric:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-color: var(--primary-color);
+}
+
+.clickable-metric.active {
+    border-color: var(--primary-color);
+    background-color: var(--primary-color-light);
+}
+
+.clickable-metric.active .card-title {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.clickable-metric::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: transparent;
+    transition: background-color 0.2s ease;
+}
+
+.clickable-metric.active::after {
+    background: var(--primary-color);
+}
+
+/* 图表控制按钮样式 */
+.chart-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.chart-controls .btn {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+}
+
+/* 图表容器样式 */
+.chart-wrapper {
+    position: relative;
+    width: 100%;
+    margin: 1rem 0;
+    min-height: 300px;
+}
+
+.chart-wrapper canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* 确保卡片有足够的空间 */
+.card {
+    margin-bottom: 1rem;
+}
+
+.card-body {
+    padding: 1.5rem;
+}

@@ -8,18 +8,812 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Bootstrap and other CSS -->
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
-    <!-- flatpickr CSS -->
+    <!-- DataTables 完整包 -->
+    <link href="https://cdn.datatables.net/v/bs5/dt-2.0.2/fc-5.0.0/datatables.min.css" rel="stylesheet">
+    <!-- Flatpickr CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/weekSelect/weekSelect.css">
+    <style>
+        /* Ant Design风格表格样式 - 修复滚动问题 */
+        .ant-table {
+            font-size: 14px;
+            color: #262626;
+            border: none !important;
+            border-radius: 6px;
+            overflow: visible !important;
+            margin-top: 16px;
+            position: relative;
+            width: 100% !important;
+        }
+
+        .ant-table table {
+            width: auto !important;
+            min-width: max-content !important;
+            border-collapse: collapse;
+            margin: 0;
+            table-layout: auto !important;
+        }
+
+        .ant-table th {
+            background: #fafafa;
+            border-bottom: 1px solid #d9d9d9;
+            border-right: 1px solid #d9d9d9;
+            padding: 12px 16px;
+            text-align: center;
+            font-weight: 600;
+            color: #262626;
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            min-width: 120px !important;
+        }
+
+        .ant-table th:last-child {
+            border-right: none;
+        }
+
+        .ant-table td {
+            border-bottom: 1px solid #f0f0f0;
+            border-right: 1px solid #f0f0f0;
+            padding: 12px 16px;
+            text-align: center;
+            white-space: nowrap;
+            min-width: 120px !important;
+        }
+
+        .ant-table td:last-child {
+            border-right: none;
+        }
+
+        .ant-table tbody tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .ant-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* 固定列样式 */
+        .ant-table .fixed-left {
+            position: sticky;
+            left: 0;
+            background: white;
+            z-index: 3;
+            box-shadow: 2px 0 4px rgba(0,0,0,0.1);
+            text-align: center;
+            min-width: 150px;
+        }
+
+        .ant-table th.fixed-left {
+            background: #fafafa;
+            z-index: 4;
+            text-align: center;
+        }
+
+        .ant-table tbody tr:hover .fixed-left {
+            background: #f5f5f5;
+        }
+
+        /* 滚动容器 - 基础样式 */
+        .table-scroll-container {
+            overflow-x: auto !important;
+            overflow-y: auto !important;
+            max-height: 500px;
+            width: 100% !important;
+            border: none !important;
+            border-radius: 6px;
+            position: relative;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .table-scroll-container::-webkit-scrollbar {
+            width: 12px;
+            height: 12px;
+        }
+
+        .table-scroll-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 6px;
+        }
+
+        .table-scroll-container::-webkit-scrollbar-thumb {
+            background-color: #c1c1c1;
+            border-radius: 6px;
+            border: 2px solid #f1f1f1;
+        }
+
+        .table-scroll-container::-webkit-scrollbar-thumb:hover {
+            background-color: #a8a8a8;
+        }
+
+        .table-scroll-container::-webkit-scrollbar-corner {
+            background: #f1f1f1;
+        }
+
+        /* 确保表格能够自适应内容宽度 */
+        .ant-table table {
+            min-width: max-content !important;
+            width: auto !important;
+        }
+
+        /* 筛选按钮组 */
+        .filter-group {
+            margin-bottom: 16px;
+        }
+
+        .filter-btn {
+            border: 1px solid #d9d9d9;
+            background: white;
+            color: #262626;
+            padding: 4px 15px;
+            margin-right: 8px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            border-color: #40a9ff;
+            color: #40a9ff;
+        }
+
+        .filter-btn.active {
+            background: #1890ff;
+            border-color: #1890ff;
+            color: white;
+        }
+
+        /* 自定义颜色样式 */
+        .text-success {
+            color: #52c41a !important;
+            font-weight: 500;
+        }
+
+        .text-danger {
+            color: #ff4d4f !important;
+            font-weight: 500;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-left {
+            text-align: left;
+        }
+
+        /* 滚动指示器 */
+        .table-scroll-indicator {
+            position: relative;
+        }
+
+        .table-scroll-indicator::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 20px;
+            height: 100%;
+            background: linear-gradient(to left, rgba(255,255,255,0.8), transparent);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .table-scroll-container:not(:hover) .table-scroll-indicator::after {
+            opacity: 1;
+        }
+
+        /* 表格底部阴影，提示可以向下滚动 */
+        .table-scroll-container::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 10px;
+            background: linear-gradient(to top, rgba(0,0,0,0.1), transparent);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1;
+        }
+
+        .table-scroll-container:not(:hover)::before {
+            opacity: 1;
+        }
+    </style>
     <!-- DataTables RowGroup CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/rowgroup/1.2.0/css/rowGroup.bootstrap5.min.css">
-    <!-- DataTables FixedColumns CSS -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/fixedcolumns/5.0.0/css/fixedColumns.bootstrap5.min.css">
+
+    <!-- Simple Table CSS -->
+    <style>
+        #simpleTable th, #simpleTable td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+            white-space: nowrap;
+        }
+        #simpleTable th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        #simpleTable .positive { color: #28a745; font-weight: 500; }
+        #simpleTable .negative { color: #dc3545; font-weight: 500; }
+        #simpleTable .text-center { text-align: center; }
+        #simpleTable .text-right { text-align: right; }
+        #simpleTable .fw-bold { font-weight: bold; }
+        #table-status {
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        #table-status.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        #table-status.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        /* 统一指标卡样式 - 自适应宽高 */
+        .metric-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            border: 1px solid #e8e8e8;
+            min-width: 180px;
+            width: auto;
+            height: auto;
+            background-color: white !important;
+        }
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        /* 确保所有指标卡和其内容都是白色背景 */
+        .metric-card,
+        .metric-card .card-body {
+            background-color: white !important;
+        }
+        .metric-card .card-body {
+            padding: 1rem;
+            min-height: auto;
+        }
+        .metric-icon {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+        .metric-value {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin: 0.5rem 0 0 0;
+            color: #2c3e50;
+            line-height: 1.2;
+        }
+        .metric-labels {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            margin-bottom: 0.5rem;
+            text-align: left;
+        }
+        .metric-change {
+            font-size: 0.7rem;
+            font-weight: 500;
+            padding: 2px 6px;
+            border-radius: 10px;
+            display: block;
+            text-align: left;
+            min-width: -webkit-fill-available;
+            min-width: fit-content;
+        }
+        .metric-change.text-success {
+            color: #28a745 !important;
+        }
+        .metric-change.text-danger {
+            color: #dc3545 !important;
+        }
+        .metric-progress {
+            font-size: 0.7rem;
+            color: #6c757d;
+            padding: 2px 6px;
+            border-radius: 10px;
+            display: block;
+            text-align: left;
+            min-width: fit-content;
+            min-width: -webkit-fill-available;
+        }
+        .card-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+
+        /* 自适应列布局 */
+        .col-auto {
+            flex: 0 0 auto;
+            width: auto;
+        }
+
+        /* 确保行内容居中对齐 */
+        .row.g-4 {
+            justify-content: flex-start;
+            align-items: stretch;
+        }
+
+        /* 统一指标卡样式 */
+        .metric-card {
+            flex: 1;
+            min-width: 0;
+            height: 100%;
+        }
+
+        /* 确保行内所有列等宽 */
+        .row .col {
+            flex: 1 1 0%;
+            max-width: none;
+        }
+
+        /* 活动数据专用样式 - 5列等宽布局 */
+        .row-cols-5 > .col {
+            flex: 0 0 20%;
+            max-width: 20%;
+        }
+
+        /* 确保所有指标卡有相同的最小高度和结构 - 3行布局 */
+        .metric-card .card-body {
+            min-height: 100px;
+            display: grid;
+            grid-template-rows: 1.2rem 2.5rem auto;
+            gap: 0.2rem;
+            padding: 0.6rem;
+        }
+
+        /* Grid区域定义 */
+        .metric-card .card-title {
+            grid-row: 1;
+            margin-bottom: 0;
+            height: 1.2rem;
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .metric-card .metric-main-value {
+            grid-row: 2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.1;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            align-self: center;
+            font-weight: 700;
+        }
+
+        .metric-card .metric-labels {
+            grid-row: 3;
+            height: 2.3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            gap: 0.15rem;
+            margin: 0;
+            align-self: start;
+        }
+
+        /* 确保年同比和环比/进度条的精确对齐 */
+        .metric-change:first-child {
+            margin-bottom: 0.2rem;
+        }
+
+        /* 行内所有指标卡的标签区域对齐 */
+        .row .metric-card .metric-labels {
+            align-items: flex-start;
+        }
+
+        /* 年同比标签的基线对齐 */
+        .metric-change {
+            line-height: 1.2;
+            height: 1.2rem;
+            display: block;
+            text-align: left;
+            font-size: 0.7rem;
+            font-weight: 500;
+            padding: 1px 4px;
+            border-radius: 8px;
+            margin-left: 0;
+        }
+
+        /* 确保年同比标签始终在相同位置 */
+        .metric-change:first-child {
+            margin-top: 0;
+        }
+
+        /* 环比/达成率/核销进度标签 */
+        .metric-change:last-child {
+            margin-top: auto;
+        }
+
+        /* 不同模块的指标卡高度统一 - 紧凑布局 */
+        #transactionMetricCards .metric-card .card-body {
+            min-height: 100px;
+        }
+
+        #activityMetricCards .metric-card .card-body {
+            min-height: 105px; /* 考虑到核销进度条 */
+        }
+
+        #supplyMetricCards .metric-card .card-body,
+        #userMetricCards .metric-card .card-body,
+        #rtbMetricCards .metric-card .card-body {
+            min-height: 95px;
+        }
+
+        .metric-main-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #333;
+            margin: 0 0 0.75rem 0;
+            line-height: 1.2;
+        }
+        .metric-main-value .unit {
+            font-size: 0.875rem;
+            font-weight: 400;
+            color: #666;
+        }
+        .metric-changes {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+        .metric-change {
+            font-size: 0.7rem;
+            font-weight: 500;
+            padding: 2px 6px;
+            display: block;
+            text-align: left;
+        }
+        .metric-change.positive {
+            color: #27ae60 !important;
+        }
+        .metric-change.negative {
+            color: #e74c3c !important;
+        }
+        .metric-change.neutral {
+            color: #f39c12 !important;
+        }
+
+        /* 全局表格水平滚动样式 */
+        .table-responsive {
+            overflow-x: auto !important;
+            overflow-y: visible !important;
+            /* 移除已废弃的-webkit-overflow-scrolling属性 */
+            display: block !important;
+            width: 100% !important;
+        }
+
+        /* 美化滚动条 */
+        .table-responsive::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .table-responsive::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* 确保所有表格都有足够宽度触发滚动 */
+        .table-responsive table {
+            min-width: 1000px !important;
+            margin-bottom: 0 !important;
+            width: auto !important;
+        }
+
+        .table-responsive th,
+        .table-responsive td {
+            white-space: nowrap !important;
+            min-width: 100px !important;
+            padding: 8px 12px !important;
+        }
+
+        /* 特定表格的最小宽度 */
+        #supplyDetailTable {
+            min-width: 1800px !important;
+        }
+
+        #rtbDetailTable {
+            min-width: 1500px !important;
+        }
+
+        #activityDataTable {
+            min-width: 1200px !important;
+        }
+
+        #simpleTable {
+            min-width: 1000px !important;
+        }
+
+        #user-table-head table,
+        #user-table-body table {
+            min-width: 1600px !important;
+        }
+
+        /* 交易数据表格容器 */
+        .table-container {
+            overflow-x: auto !important;
+            overflow-y: auto !important;
+            /* 移除已废弃的-webkit-overflow-scrolling属性 */
+        }
+        .metric-change.text-success {
+            color: #27ae60 !important;
+        }
+        .metric-change.text-danger {
+            color: #e74c3c !important;
+        }
+        /* 进度条样式已在上方统一定义 */
+        .progress-value {
+            font-weight: 600;
+            color: #333;
+        }
+
+        /* 强制左右布局样式 */
+        .main-content {
+            display: flex !important;
+            flex-direction: column !important;
+            padding: 1rem !important;
+            height: calc(100vh - 80px) !important;
+        }
+
+        .content-wrapper {
+            display: flex !important;
+            flex-direction: row !important;
+            gap: 1rem !important;
+            flex: 1 !important;
+            min-height: 0 !important;
+        }
+
+        .domain-sidebar {
+            width: 200px !important;
+            flex: 0 0 200px !important;
+            min-width: 200px !important;
+            max-width: 200px !important;
+        }
+
+        .main-panel {
+            flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 1rem !important;
+            overflow-y: auto !important;
+            min-height: 0 !important;
+        }
+
+        /* 确保图表容器有足够空间 */
+        .chart-wrapper {
+            position: relative !important;
+            width: 100% !important;
+        }
+
+        .chart-wrapper canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        /* 响应式 */
+        @media (max-width: 992px) {
+            .content-wrapper {
+                flex-direction: column !important;
+            }
+            .domain-sidebar {
+                width: 100% !important;
+                flex: none !important;
+                margin-bottom: 1rem !important;
+            }
+        }
+
+        /* 表格容器样式 - 确保能够正确滚动 */
+        .table-responsive {
+            position: relative !important;
+            width: 100% !important;
+            overflow-x: auto !important;
+            overflow-y: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+            border: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        /* 表格基础样式 */
+        .table-responsive .table {
+            margin-bottom: 0 !important;
+            min-width: max-content !important;
+            width: auto !important;
+        }
+
+        /* 固定表头样式 */
+        .table-responsive .table thead th {
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 10 !important;
+            background: #f8f9fa !important;
+            border-bottom: 2px solid #dee2e6 !important;
+            white-space: nowrap !important;
+            min-width: 120px !important;
+            padding: 8px 12px !important;
+        }
+
+        /* 固定第一列样式 */
+        .table-responsive .table tbody td:first-child,
+        .table-responsive .table thead th:first-child {
+            position: sticky !important;
+            left: 0 !important;
+            z-index: 5 !important;
+            background: #f8f9fa !important;
+            border-right: 2px solid #dee2e6 !important;
+            font-weight: 600 !important;
+            min-width: 100px !important;
+        }
+
+        .table-responsive .table thead th:first-child {
+            z-index: 11 !important;
+        }
+
+        /* 表格内容样式 */
+        .table-responsive .table tbody td {
+            background: white !important;
+            white-space: nowrap !important;
+            min-width: 120px !important;
+            padding: 8px 12px !important;
+        }
+
+        /* 移除可能限制滚动的容器样式 */
+        .card-body {
+            overflow: visible !important;
+        }
+
+        /* 确保所有可能包含表格的容器都不限制滚动 */
+        .card,
+        .card-body,
+        .row,
+        .col,
+        .col-12,
+        .col-md-5,
+        .col-md-7 {
+            overflow: visible !important;
+        }
+
+        /* 特别处理表格容器 */
+        .table-responsive {
+            max-width: 100% !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        /* 确保表格能够扩展到需要的宽度 */
+        .table-responsive .table {
+            table-layout: auto !important;
+            width: auto !important;
+        }
+
+        /* 确保交易数据表格有白色背景 */
+        #dimensionDataTable {
+            background-color: white !important;
+        }
+
+        .table-responsive {
+            background-color: white !important;
+        }
+
+        /* 统一所有表格容器的滚动条样式 */
+        .table-responsive::-webkit-scrollbar {
+            width: 12px;
+            height: 12px;
+        }
+
+        .table-responsive::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 6px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb {
+            background-color: #c1c1c1;
+            border-radius: 6px;
+            border: 2px solid #f1f1f1;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb:hover {
+            background-color: #a8a8a8;
+        }
+
+        .table-responsive::-webkit-scrollbar-corner {
+            background: #f1f1f1;
+        }
+
+        /* 供给明细表格固定样式 - 增强优先级 */
+        .table-scroll-container {
+            max-height: 500px !important;
+            overflow-x: auto !important;
+            overflow-y: auto !important;
+            border: 1px solid #dee2e6 !important;
+            border-radius: 0.375rem !important;
+            position: relative !important;
+            width: 100% !important;
+            -webkit-overflow-scrolling: touch !important;
+        }
+
+        .table-scroll-container table {
+            margin: 0 !important;
+            border-collapse: separate !important;
+            border-spacing: 0 !important;
+            width: auto !important;
+            min-width: max-content !important;
+            table-layout: auto !important;
+        }
+
+        .table-scroll-container thead th {
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 10 !important;
+            background: #f8f9fa !important;
+            border-bottom: 2px solid #dee2e6 !important;
+            padding: 12px 8px !important;
+            text-align: center !important;
+            font-weight: 600 !important;
+            white-space: nowrap !important;
+            min-width: 120px !important;
+        }
+
+        .table-scroll-container tbody td:first-child,
+        .table-scroll-container thead th:first-child {
+            position: sticky !important;
+            left: 0 !important;
+            z-index: 5 !important;
+            background: #f8f9fa !important;
+            border-right: 2px solid #dee2e6 !important;
+            font-weight: 600 !important;
+            min-width: 100px !important;
+        }
+
+        .table-scroll-container thead th:first-child {
+            z-index: 11 !important;
+        }
+
+        .table-scroll-container tbody td {
+            padding: 8px !important;
+            text-align: center !important;
+            border-bottom: 1px solid #dee2e6 !important;
+            border-right: 1px solid #dee2e6 !important;
+            white-space: nowrap !important;
+            background: white !important;
+            min-width: 120px !important;
+        }
+
+    </style>
+    <!-- Custom CSS -->
     <link href="css/style.css" rel="stylesheet">
 </head>
 <body>
@@ -32,13 +826,17 @@
                 </a>
                 <div class="navbar-nav ms-auto">
                     <div class="input-group">
-                        <input type="text" class="form-control" id="weekPicker" placeholder="选择周" readonly style="width: 200px;">
+                        <input type="text" class="form-control" id="weekPicker" placeholder="选择周" readonly>
+                        <span class="input-group-text">
+                            <i class="fas fa-calendar-week"></i>
+                        </span>
                     </div>
                 </div>
             </div>
         </nav>
 
         <div class="main-content">
+            <!-- 强制左右布局 -->
             <div class="content-wrapper">
                 <!-- 左侧数据领域导航 -->
                 <div class="domain-sidebar">
@@ -98,69 +896,42 @@
 
                     <!-- 交易领域专属内容 -->
                     <div id="transaction-content">
-                        <!-- 指标卡片区域 -->
-                        <div class="row g-4" id="metricCards">
-                            <!-- GMV YTD 指标卡 -->
+                        <!-- 交易数据指标卡 -->
+                        <div class="row g-3" id="transactionMetricCards">
                             <div class="col-md-4">
-                                <div class="card metric-card h-100">
+                                <div class="card metric-card transaction-card">
                                     <div class="card-body">
-                                        <h5 class="card-title">YTD</h5>
-                                        <div class="metric-main">
-                                            <p class="metric-value" id="gmvYTD">-</p>
+                                        <h6 class="card-title" id="gmvWeekTitle">GMV Week</h6>
+                                        <h3 class="metric-main-value" id="gmvWeek">11,866,815</h3>
+                                        <div class="metric-labels">
+                                            <small class="metric-change positive" id="gmvWeekYOY">年同比 ▲ 18.1%</small>
+                                            <small class="metric-change positive" id="gmvWOW">周环比 ▲ 5.46%</small>
                                         </div>
-                                        <div class="metric-secondary">
-                                            <span class="metric-label">年同比</span>
-                                            <span class="metric-value" id="gmvYOY">-</span>
-                                        </div>
-                                        <div class="metric-row mt-3">
-                                            <span class="metric-label">目标达成率</span>
-                                            <div class="progress">
-                                                <div class="progress-bar" id="gmvTargetBar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-                                                    <span id="gmvTarget">-</span>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <div class="placeholder-section"></div>
                                     </div>
                                 </div>
                             </div>
-                            <!-- GMV MTD 指标卡 -->
                             <div class="col-md-4">
-                                <div class="card metric-card h-100">
+                                <div class="card metric-card transaction-card">
                                     <div class="card-body">
-                                        <h5 class="card-title">MTD</h5>
-                                        <div class="metric-main">
-                                            <p class="metric-value" id="gmvMTD">-</p>
+                                        <h6 class="card-title">GMV MTD</h6>
+                                        <h3 class="metric-main-value" id="gmvMTD">20,199,157</h3>
+                                        <div class="metric-labels">
+                                            <small class="metric-change positive" id="gmvMTDYOY">年同比 ▲ 15.82%</small>
+                                            <small class="metric-change positive" id="gmvMTDMOM">月环比 ▲ 5.88%</small>
                                         </div>
-                                        <div class="metric-secondary">
-                                            <span class="metric-label">年同比</span>
-                                            <span class="metric-value" id="gmvMTDYOY">-</span>
-                                        </div>
-                                        <div class="metric-row mt-3">
-                                            <span class="metric-label">目标达成率</span>
-                                            <div class="progress">
-                                                <div class="progress-bar" id="gmvMTDTargetBar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-                                                    <span id="gmvMTDTarget">-</span>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <div class="placeholder-section"></div>
                                     </div>
                                 </div>
                             </div>
-                            <!-- GMV Week 指标卡 -->
                             <div class="col-md-4">
-                                <div class="card metric-card h-100">
+                                <div class="card metric-card transaction-card">
                                     <div class="card-body">
-                                        <h5 class="card-title" id="gmvWeekTitle">Week 20</h5>
-                                        <div class="metric-main">
-                                             <p class="metric-value" id="gmvWeek">-</p>
-                                        </div>
-                                         <div class="metric-secondary">
-                                            <span class="metric-label">年同比</span>
-                                            <span class="metric-value" id="gmvWeekYOY">-</span>
-                                        </div>
-                                        <div class="metric-secondary">
-                                            <span class="metric-label">周环比</span>
-                                            <span class="metric-value" id="gmvWOW">-</span>
+                                        <h6 class="card-title">GMV YTD</h6>
+                                        <h3 class="metric-main-value" id="gmvYTD">134,682,586</h3>
+                                        <div class="metric-labels">
+                                            <small class="metric-change positive" id="gmvYOY">年同比 ▲ 22.39%</small>
+                                            <small class="metric-change positive" id="gmvTargetPercent">达成率 88.7%</small>
                                         </div>
                                     </div>
                                 </div>
@@ -168,7 +939,7 @@
                         </div>
 
                         <!-- GMV趋势图 & 多维表现 -->
-                        <div class="row g-4 mt-1">
+                        <div class="row g-3 mt-2">
                             <div class="col-lg-12">
                                <div class="card">
                                     <div class="card-body">
@@ -198,24 +969,540 @@
                                             <div class="row g-4">
                                                 <!-- Top Left: Pie Chart -->
                                                 <div class="col-md-5">
-                                                    <div class="chart-wrapper" style="height: 400px;">
+                                                    <div class="chart-wrapper" style="height: 450px; min-height: 450px; width: 100%; position: relative;">
                                                         <canvas id="dimensionPieChart"></canvas>
                                                     </div>
                                                 </div>
                                                 <!-- Top Right: Combo Chart -->
                                                 <div class="col-md-7">
-                                                    <div class="chart-wrapper" style="height: 400px;">
+                                                    <div class="chart-wrapper" style="height: 450px; min-height: 450px; width: 100%; position: relative;">
                                                         <canvas id="dimensionComboChart"></canvas>
                                                     </div>
                                                 </div>
-                                                <!-- Bottom: Data Table -->
+                                                <!-- Bottom: Simple Table -->
                                                 <div class="col-12 mt-4">
-                                                    <div>
-                                                         <table class="table table-hover table-bordered" id="dimensionDataTable" style="width:100%;">
-                                                             <!-- a new header will be generated dynamically -->
-                                                         </table>
-                                                     </div>
+                                                    <div id="table-status" style="margin-bottom: 10px;"></div>
+                                                    <div class="table-responsive" style="max-height: 400px; background: white; border: 1px solid #dee2e6; border-radius: 0.375rem;">
+                                                        <div id="table-loading" style="padding: 20px; text-align: center; color: #666;">
+                                                            正在加载明细数据...
+                                                        </div>
+                                                        <table id="dimensionDataTable" class="table table-hover table-bordered mb-0" style="display: none;">
+                                                            <thead class="table-light"></thead>
+                                                            <tbody></tbody>
+                                                        </table>
+                                                    </div>
                                                 </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 活动数据内容 -->
+                    <div id="activity-content" style="display: none;">
+                        <div class="row g-3 row-cols-5" id="activityMetricCards">
+                            <!-- 活动数据指标卡 -->
+                            <div class="col">
+                                <div class="card metric-card clickable-metric" data-metric="activityGmv" data-chart-type="activity">
+                                    <div class="card-body">
+                                        <h6 class="card-title">活动GMV</h6>
+                                        <h3 class="metric-main-value" id="activityGmv">-</h3>
+                                        <div class="metric-labels">
+                                            <small class="metric-change" id="activityGmvYoy">年同比 -</small>
+                                        </div>
+                                        <div class="placeholder-section"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="card metric-card clickable-metric" data-metric="activityGmvRatio" data-chart-type="activity">
+                                    <div class="card-body">
+                                        <h6 class="card-title">活动GMV占比</h6>
+                                        <h3 class="metric-main-value" id="activityGmvRatio">-</h3>
+                                        <div class="metric-labels">
+                                            <small class="metric-change" id="activityGmvRatioYoy">年同比 -</small>
+                                        </div>
+                                        <div class="placeholder-section"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="card metric-card clickable-metric" data-metric="verificationAmount" data-chart-type="activity">
+                                    <div class="card-body">
+                                        <h6 class="card-title">核销金额</h6>
+                                        <h3 class="metric-main-value" id="verificationAmount">-</h3>
+                                        <div class="metric-labels">
+                                            <small class="metric-change" id="verificationAmountYoy">年同比 -</small>
+                                            <small class="metric-change" id="verificationProgress">核销进度 -</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="card metric-card clickable-metric" data-metric="activityCostRatio" data-chart-type="activity">
+                                    <div class="card-body">
+                                        <h6 class="card-title">活动费比</h6>
+                                        <h3 class="metric-main-value" id="activityCostRatio">-</h3>
+                                        <div class="metric-labels">
+                                            <small class="metric-change" id="activityCostRatioYoy">年同比 -</small>
+                                        </div>
+                                        <div class="placeholder-section"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="card metric-card clickable-metric" data-metric="totalCostRatio" data-chart-type="activity">
+                                    <div class="card-body">
+                                        <h6 class="card-title">全量费比</h6>
+                                        <h3 class="metric-main-value" id="totalCostRatio">-</h3>
+                                        <div class="metric-labels">
+                                            <small class="metric-change" id="totalCostRatioYoy">年同比 -</small>
+                                        </div>
+                                        <div class="placeholder-section"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row g-4 mt-1">
+                            <div class="col-md-7">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h5 class="card-title mb-0">活动趋势分析</h5>
+                                            <div class="chart-controls">
+                                                <button type="button" class="btn btn-sm btn-outline-primary" id="activity-chart-toggle" title="点击指标卡切换图表数据">
+                                                    <i class="fas fa-chart-line"></i> 点击指标卡切换
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="chart-wrapper" style="height: 400px; min-height: 400px; width: 100%; position: relative;">
+                                            <canvas id="activityTrendChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <h5 class="card-title">活动详细数据</h5>
+                                        <div class="table-responsive" style="max-height: 400px;">
+                                            <table class="table table-hover table-bordered mb-0">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th class="text-center">周次</th>
+                                                        <th class="text-center">活动GMV</th>
+                                                        <th class="text-center">GMV年同比</th>
+                                                        <th class="text-center">核销金额</th>
+                                                        <th class="text-center">核销年同比</th>
+                                                        <th class="text-center">活动费比</th>
+                                                        <th class="text-center">费比年同比</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="activity-table-body">
+                                                    <!-- 数据将通过JavaScript填充 -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 活动明细表格 -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h5 class="card-title mb-0">活动明细数据</h5>
+                                            <div class="d-flex gap-2">
+                                                <select class="form-select form-select-sm" id="activityFilterSelect" style="width: auto;">
+                                                    <option value="city">城市</option>
+                                                    <option value="retailer">零售商</option>
+                                                    <option value="product">商品</option>
+                                                    <option value="discount">满减机制</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="table-responsive" style="max-height: 500px;">
+                                            <table id="activityDetailTable" class="table table-hover table-bordered mb-0">
+                                                <thead class="table-light" id="activityDetailTableHead">
+                                                    <!-- 表头将通过JavaScript动态生成 -->
+                                                </thead>
+                                                <tbody id="activityDetailTableBody">
+                                                    <!-- 数据将通过JavaScript填充 -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 供给数据内容 -->
+                    <div id="supply-content" style="display: none;">
+                        <div class="row g-4 row-cols-5" id="supplyMetricCards">
+                            <!-- 供给数据指标卡 -->
+                            <div class="col">
+                                <div class="card metric-card clickable-metric" data-metric="storeCount" data-metric-name="铺货店铺数">
+                                    <div class="card-body">
+                                        <h6 class="card-title">铺货店铺数</h6>
+                                        <h3 class="metric-main-value" id="storeCount">-</h3>
+                                        <div class="metric-labels">
+                                            <small class="metric-change" id="storeCountWow">周环比 -</small>
+                                        </div>
+                                        <div class="placeholder-section"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="card metric-card clickable-metric" data-metric="storeSalesRate" data-metric-name="店铺动销率">
+                                    <div class="card-body">
+                                        <h6 class="card-title">店铺动销率</h6>
+                                        <h3 class="metric-main-value" id="storeSalesRate">-</h3>
+                                        <div class="metric-labels">
+                                            <small class="metric-change" id="storeSalesRateWow">周环比 -</small>
+                                        </div>
+                                        <div class="placeholder-section"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="card metric-card clickable-metric" data-metric="avgSkuPerStore" data-metric-name="店均在售SKU数">
+                                    <div class="card-body">
+                                        <h6 class="card-title">店均在售SKU数</h6>
+                                        <h3 class="metric-main-value" id="avgSkuPerStore">-</h3>
+                                        <div class="metric-labels">
+                                            <small class="metric-change" id="avgSkuPerStoreWow">周环比 -</small>
+                                        </div>
+                                        <div class="placeholder-section"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="card metric-card clickable-metric" data-metric="skuStorePenetration" data-metric-name="店铺渗透率">
+                                    <div class="card-body">
+                                        <h6 class="card-title">店铺渗透率</h6>
+                                        <h3 class="metric-main-value" id="skuStorePenetration">-</h3>
+                                        <div class="metric-labels">
+                                            <small class="metric-change" id="skuStorePenetrationWow">周环比 -</small>
+                                        </div>
+                                        <div class="placeholder-section"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="card metric-card clickable-metric" data-metric="skuSelloutRate" data-metric-name="SKU售罄率">
+                                    <div class="card-body">
+                                        <h6 class="card-title">SKU售罄率</h6>
+                                        <h3 class="metric-main-value" id="skuSelloutRate">-</h3>
+                                        <div class="metric-labels">
+                                            <small class="metric-change" id="skuSelloutRateWow">周环比 -</small>
+                                        </div>
+                                        <div class="placeholder-section"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 供给趋势分析 -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h5 class="card-title mb-0">供给趋势分析</h5>
+                                            <div class="chart-controls">
+                                                <button type="button" class="btn btn-sm btn-outline-primary" id="supply-chart-toggle" title="点击指标卡切换图表数据">
+                                                    <i class="fas fa-chart-line"></i> 点击指标卡切换
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="chart-wrapper" style="height: 450px; min-height: 450px; width: 100%; position: relative;">
+                                            <canvas id="supplyTrendChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 明细表 -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">供给明细数据</h5>
+                                        <div class="filter-group">
+                                            <button class="filter-btn active" onclick="switchSupplyFilter('overall', this)">整体</button>
+                                            <button class="filter-btn" onclick="switchSupplyFilter('channel', this)">重点渠道</button>
+                                            <button class="filter-btn" onclick="switchSupplyFilter('product', this)">重点商品</button>
+                                        </div>
+                                        <div class="table-scroll-container">
+                                            <div class="ant-table table-scroll-indicator">
+                                                <table>
+                                                    <thead id="supply-table-head">
+                                                        <!-- 表头将通过JavaScript填充 -->
+                                                    </thead>
+                                                    <tbody id="supply-table-body">
+                                                        <!-- 数据将通过JavaScript填充 -->
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 用户数据内容 -->
+                    <div id="user-content" style="display: none;">
+                        <div class="row g-4" id="userMetricCards">
+                            <!-- 用户数据指标卡 - 第一行 -->
+                            <div class="col-md-4">
+                                <div class="card metric-card">
+                                    <div class="card-body">
+                                        <h6 class="card-title">新客数量</h6>
+                                        <h3 class="metric-main-value" id="newUserCount">-</h3>
+                                        <div class="metric-labels">
+                                            <small class="metric-change" id="newUserCountWow">周环比 -</small>
+                                            <small class="metric-progress" id="newUserCountRatio">占比 -</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card metric-card">
+                                    <div class="card-body">
+                                        <h6 class="card-title">新客销售额</h6>
+                                        <h3 class="metric-main-value" id="newUserSales">-</h3>
+                                        <div class="metric-labels">
+                                            <small class="metric-change" id="newUserSalesWow">周环比 -</small>
+                                            <small class="metric-progress" id="newUserSalesRatio">占比 -</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card metric-card">
+                                    <div class="card-body">
+                                        <h6 class="card-title">新客客单价</h6>
+                                        <h3 class="metric-main-value" id="newUserAvgOrder">-</h3>
+                                        <div class="metric-labels">
+                                            <small class="metric-change" id="newUserAvgOrderWow">周环比 -</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row g-4 mt-1">
+                            <!-- 用户数据指标卡 - 第二行 -->
+                            <div class="col-md-4">
+                                <div class="card metric-card">
+                                    <div class="card-body">
+                                        <h6 class="card-title">老客数量</h6>
+                                        <h3 class="metric-main-value" id="oldUserCount">-</h3>
+                                        <div class="metric-labels">
+                                            <small class="metric-change" id="oldUserCountWow">周环比 -</small>
+                                            <small class="metric-progress" id="oldUserCountRatio">占比 -</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card metric-card">
+                                    <div class="card-body">
+                                        <h6 class="card-title">老客销售额</h6>
+                                        <h3 class="metric-main-value" id="oldUserSales">-</h3>
+                                        <div class="metric-labels">
+                                            <small class="metric-change" id="oldUserSalesWow">周环比 -</small>
+                                            <small class="metric-progress" id="oldUserSalesRatio">占比 -</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card metric-card">
+                                    <div class="card-body">
+                                        <h6 class="card-title">老客客单价</h6>
+                                        <h3 class="metric-main-value" id="oldUserAvgOrder">-</h3>
+                                        <div class="metric-labels">
+                                            <small class="metric-change" id="oldUserAvgOrderWow">周环比 -</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 新老客分布图表 -->
+                        <div class="row g-4 mt-1">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h5 class="card-title mb-0">新老客分布</h5>
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <button type="button" class="btn btn-outline-primary active" id="userDistributionValueBtn">数值</button>
+                                                <button type="button" class="btn btn-outline-primary" id="userDistributionRatioBtn">占比</button>
+                                            </div>
+                                        </div>
+                                        <div class="chart-wrapper" style="height: 400px; min-height: 400px; width: 100%; position: relative;">
+                                            <canvas id="userDistributionChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 新老客表现图表 -->
+                        <div class="row g-4 mt-1">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h5 class="card-title mb-0">新老客表现</h5>
+                                            <select class="form-select form-select-sm" id="userPerformanceMetricSelect" style="width: auto;">
+                                                <option value="sales">销售额</option>
+                                                <option value="avgOrder">客单价</option>
+                                            </select>
+                                        </div>
+                                        <div class="chart-wrapper" style="height: 400px; min-height: 400px; width: 100%; position: relative;">
+                                            <canvas id="userPerformanceChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 用户数据明细表格 -->
+                        <div class="row g-4 mt-1">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">用户数据明细</h5>
+                                        <div class="table-scroll-container">
+                                            <table class="table table-hover table-scroll-indicator" id="userDetailTable"></table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 明细表 -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">用户数据明细</h5>
+                                        <div class="filter-group">
+                                            <button class="filter-btn active" onclick="switchUserFilter('overall', this)">整体</button>
+                                            <button class="filter-btn" onclick="switchUserFilter('new', this)">新客</button>
+                                            <button class="filter-btn" onclick="switchUserFilter('old', this)">老客</button>
+                                        </div>
+                                        <div class="table-scroll-container">
+                                            <div class="ant-table table-scroll-indicator">
+                                                <table>
+                                                    <thead id="user-table-head">
+                                                        <!-- 表头将通过JavaScript填充 -->
+                                                    </thead>
+                                                    <tbody id="user-table-body">
+                                                        <!-- 数据将通过JavaScript填充 -->
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RTB数据内容 -->
+                    <div id="rtb-content" style="display: none;">
+                        <div class="row g-4 row-cols-4" id="rtbMetricCards">
+                            <!-- RTB数据指标卡 -->
+                            <div class="col">
+                                <div class="card metric-card clickable-metric" data-metric="rtbConsumption" data-metric-name="消耗">
+                                    <div class="card-body">
+                                        <h6 class="card-title">消耗</h6>
+                                        <h3 class="metric-main-value" id="rtbConsumption">-</h3>
+                                        <div class="metric-labels">
+                                            <small class="metric-change" id="rtbConsumptionWow">周环比 -</small>
+                                            <small class="metric-change" id="rtbConsumptionProgress">消耗进度 -</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="card metric-card clickable-metric" data-metric="rtbGuidedSales" data-metric-name="T+1引导成交金额">
+                                    <div class="card-body">
+                                        <h6 class="card-title">T+1引导成交金额</h6>
+                                        <h3 class="metric-main-value" id="rtbGuidedSales">-</h3>
+                                        <div class="metric-labels">
+                                            <small class="metric-change" id="rtbGuidedSalesWow">周环比 -</small>
+                                        </div>
+                                        <div class="placeholder-section"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="card metric-card clickable-metric" data-metric="rtbRoi" data-metric-name="ROI">
+                                    <div class="card-body">
+                                        <h6 class="card-title">ROI</h6>
+                                        <h3 class="metric-main-value" id="rtbRoi">-</h3>
+                                        <div class="metric-labels">
+                                            <small class="metric-change" id="rtbRoiWow">周环比 -</small>
+                                        </div>
+                                        <div class="placeholder-section"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- RTB趋势分析 -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h5 class="card-title mb-0">RTB趋势分析</h5>
+                                            <div class="chart-controls">
+                                                <button type="button" class="btn btn-sm btn-outline-primary" id="rtb-chart-toggle" title="点击指标卡切换图表数据">
+                                                    <i class="fas fa-chart-line"></i> 点击指标卡切换
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="chart-wrapper" style="height: 450px; min-height: 450px; width: 100%; position: relative;">
+                                            <canvas id="rtbTrendChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 明细表 -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">RTB明细数据</h5>
+                                        <div class="filter-group">
+                                            <button class="filter-btn active" onclick="switchRTBFilter('overall', this)">整体</button>
+                                            <button class="filter-btn" onclick="switchRTBFilter('plan', this)">计划</button>
+                                            <button class="filter-btn" onclick="switchRTBFilter('product', this)">商品</button>
+                                        </div>
+                                        <div class="table-scroll-container">
+                                            <div class="ant-table table-scroll-indicator">
+                                                <table>
+                                                    <thead id="rtb-table-head">
+                                                        <!-- 表头将通过JavaScript填充 -->
+                                                    </thead>
+                                                    <tbody id="rtb-table-body">
+                                                        <!-- 数据将通过JavaScript填充 -->
+                                                    </tbody>
+                                                </table>
                                             </div>
                                         </div>
                                     </div>
@@ -249,7 +1536,7 @@
                                 <div class="card h-100">
                                     <div class="card-body">
                                         <h5 class="card-title">详细数据</h5>
-                                        <div class="table-responsive">
+                                        <div class="table-container">
                                             <table class="table table-hover" id="dataTable"></table>
                                         </div>
                                     </div>
@@ -269,23 +1556,245 @@
         </div>
     </div>
     
-    <!-- JS依赖 -->
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    
+    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Bootstrap Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
-    <script src="https://cdn.datatables.net/rowgroup/1.2.0/js/dataTables.rowGroup.min.js"></script>
-    <script src="https://cdn.datatables.net/fixedcolumns/5.0.0/js/dataTables.fixedColumns.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/dayjs.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/plugin/isoWeek.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/locale/zh-cn.js"></script>
+
+    <!-- DataTables 完整包 -->
+    <script src="https://cdn.datatables.net/v/bs5/dt-2.0.2/fc-5.0.0/datatables.min.js"></script>
+    
+    <!-- Day.js -->
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.10.7/dayjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.10.7/plugin/isoWeek.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.10.7/locale/zh-cn.js"></script>
+    
+    <!-- Flatpickr -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/zh.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/weekSelect/weekSelect.js"></script>
     
-    <!-- 应用代码 -->
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+
+    <!-- Moment.js -->
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/locale/zh-cn.js"></script>
+
+    <!-- 自定义脚本 -->
     <script src="js/mockData.js"></script>
     <script src="js/app.js"></script>
+
+
+    <!-- 简单表格脚本 -->
+    <script>
+        // 简单表格功能
+        function showTableStatus(message, isError = false) {
+            const statusDiv = document.getElementById('table-status');
+            if (statusDiv) {
+                statusDiv.innerHTML = message;
+                statusDiv.className = isError ? 'error' : 'success';
+            }
+        }
+
+        function createSimpleTable(data) {
+            try {
+                const table = document.getElementById('simpleTable');
+                if (!table) return;
+
+                const thead = table.querySelector('thead');
+                const tbody = table.querySelector('tbody');
+
+                // 清空表格
+                thead.innerHTML = '';
+                tbody.innerHTML = '';
+                
+                // 设置表格最小宽度，确保有足够空间显示所有列
+                if (data.table && data.table.columns && data.table.columns.length > 8) {
+                    table.style.minWidth = '1500px';
+                } else {
+                    table.style.minWidth = '1000px';
+                }
+
+                // 创建表头
+                const headerRow1 = document.createElement('tr');
+                data.table.headers.top.forEach(header => {
+                    const th = document.createElement('th');
+                    th.textContent = header.title;
+                    if (header.colspan) th.setAttribute('colspan', header.colspan);
+                    if (header.rowspan) th.setAttribute('rowspan', header.rowspan);
+                    headerRow1.appendChild(th);
+                });
+
+                const headerRow2 = document.createElement('tr');
+                data.table.headers.bottom.forEach(header => {
+                    const th = document.createElement('th');
+                    th.textContent = header.title;
+                    headerRow2.appendChild(th);
+                });
+
+                thead.appendChild(headerRow1);
+                thead.appendChild(headerRow2);
+
+                // 创建表格内容
+                data.table.rows.forEach(rowData => {
+                    const tr = document.createElement('tr');
+
+                    data.table.columns.forEach(col => {
+                        const td = document.createElement('td');
+                        const value = rowData[col.data] || '';
+                        td.textContent = value;
+
+                        // 添加样式
+                        if (col.className) {
+                            td.className = col.className;
+                        }
+
+                        // 为百分比添加颜色
+                        if (value.includes('%')) {
+                            const num = parseFloat(value.replace('%', ''));
+                            if (!isNaN(num)) {
+                                td.classList.add(num >= 0 ? 'positive' : 'negative');
+                            }
+                        }
+
+                        tr.appendChild(td);
+                    });
+
+                    tbody.appendChild(tr);
+                });
+
+                showTableStatus(`表格更新成功！行数: ${data.table.rows.length}, 列数: ${data.table.columns.length}`);
+
+            } catch (error) {
+                showTableStatus(`表格创建失败: ${error.message}`, true);
+                console.error('Simple table error:', error);
+            }
+        }
+
+        // 获取当前筛选器状态
+        function getCurrentFilters() {
+            return {
+                platform: document.getElementById('platformSelect')?.value || 'all',
+                dimension: (document.getElementById('dimensionSelect') || document.getElementById('dimensionTypeSelector'))?.value || 'subBrand'
+            };
+        }
+
+        // 加载并显示表格数据（受筛选器控制）
+        function loadSimpleTableData() {
+            try {
+                const filters = getCurrentFilters();
+
+                showTableStatus('正在生成数据...');
+
+                const data = mockData.getMultiDimensionData(filters.platform, filters.dimension);
+                showTableStatus('数据生成成功');
+
+                createSimpleTable(data);
+
+            } catch (error) {
+                showTableStatus(`数据加载失败: ${error.message}`, true);
+                console.error('Load data error:', error);
+            }
+        }
+
+        // 重写updateDimensionTable函数以使用简单表格
+        function updateDimensionTableSimple(tableData) {
+            if (tableData) {
+                createSimpleTable({ table: tableData });
+            } else {
+                loadSimpleTableData();
+            }
+        }
+    </script>
+
+    <!-- 初始化脚本 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化 dayjs
+            dayjs.locale('zh-cn');
+            dayjs.extend(dayjs_plugin_isoWeek);
+
+            // 替换原有的表格更新函数
+            if (typeof window.updateDimensionTable === 'function') {
+                window.originalUpdateDimensionTable = window.updateDimensionTable;
+                window.updateDimensionTable = updateDimensionTableSimple;
+            }
+
+            // 监听平台选择器变化
+            const platformSelect = document.getElementById('platformSelect');
+            if (platformSelect) {
+                platformSelect.addEventListener('change', function() {
+                    // 更新当前平台变量
+                    if (typeof window.currentPlatform !== 'undefined') {
+                        window.currentPlatform = this.value;
+                    }
+                    // 触发多维度数据更新
+                    const dimensionSelect = document.getElementById('dimensionSelect') || document.getElementById('dimensionTypeSelector');
+                    const currentDimension = dimensionSelect ? dimensionSelect.value : 'subBrand';
+                    if (typeof window.updateMultiDimensionData === 'function') {
+                        const selectedDate = window.weekPicker && window.weekPicker.selectedDates.length > 0 ? window.weekPicker.selectedDates[0] : new Date();
+                        window.updateMultiDimensionData(currentDimension, selectedDate);
+                    }
+                });
+            }
+
+            // 监听维度选择器变化
+            const dimensionSelect = document.getElementById('dimensionSelect') || document.getElementById('dimensionTypeSelector');
+            if (dimensionSelect) {
+                dimensionSelect.addEventListener('change', function() {
+                    // 触发多维度数据更新
+                    if (typeof window.updateMultiDimensionData === 'function') {
+                        const selectedDate = window.weekPicker && window.weekPicker.selectedDates.length > 0 ? window.weekPicker.selectedDates[0] : new Date();
+                        window.updateMultiDimensionData(this.value, selectedDate);
+                    }
+                });
+            }
+
+            // 等待app.js加载完成后初始化
+            setTimeout(() => {
+                // 初始化多维度数据
+                const dimensionSelect = document.getElementById('dimensionSelect') || document.getElementById('dimensionTypeSelector');
+                const currentDimension = dimensionSelect ? dimensionSelect.value : 'subBrand';
+                if (typeof window.updateMultiDimensionData === 'function') {
+                    window.updateMultiDimensionData(currentDimension);
+                } else {
+                    loadSimpleTableData();
+                }
+            }, 1000);
+        });
+    </script>
+
+    <!-- Ant Design表格筛选函数 -->
+    <script>
+        // 全局筛选函数，供HTML onclick事件调用
+        function switchSupplyFilter(type, button) {
+            // 更新按钮状态
+            const buttons = button.parentElement.querySelectorAll('.filter-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+
+            // 调用app.js中的渲染函数
+            if (typeof renderSupplyTable === 'function') {
+                renderSupplyTable(type);
+            }
+        }
+
+        function switchRTBFilter(type, button) {
+            // 更新按钮状态
+            const buttons = button.parentElement.querySelectorAll('.filter-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+
+            // 调用app.js中的渲染函数
+            if (typeof renderRTBTable === 'function') {
+                renderRTBTable(type);
+            }
+        }
+    </script>
 </body>
-</html> 
+</html>

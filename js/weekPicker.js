@@ -47,4 +47,40 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         console.error('找不到weekPickerRoot元素');
     }
-}); 
+});
+
+// 周选择器插件
+const weekSelect = function(config = {}) {
+    return {
+        onReady: function() {
+            this.weekNumbers = true;
+            this.selectedDates = [];
+        },
+        
+        onChange: function(selectedDates, dateStr, instance) {
+            if (selectedDates.length > 0) {
+                const date = selectedDates[0];
+                const weekNum = dayjs(date).isoWeek();
+                const year = dayjs(date).year();
+                instance.element.value = `第${weekNum}周 ${year}年`;
+                
+                if (config.onChange) {
+                    config.onChange(weekNum, year, date);
+                }
+            }
+        },
+        
+        onValueUpdate: function(selectedDates, dateStr, instance) {
+            if (selectedDates.length > 0) {
+                const date = selectedDates[0];
+                const weekNum = dayjs(date).isoWeek();
+                const year = dayjs(date).year();
+                instance.element.value = `第${weekNum}周 ${year}年`;
+                
+                if (config.onValueUpdate) {
+                    config.onValueUpdate(weekNum, year, date);
+                }
+            }
+        }
+    };
+}; 

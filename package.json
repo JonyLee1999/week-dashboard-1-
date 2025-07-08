@@ -1,0 +1,24 @@
+{
+  "name": "week-dashboard",
+  "version": "1.0.0",
+  "description": "周维度数据看板",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "serve": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  },
+  "keywords": [
+    "dashboard",
+    "data-visualization",
+    "bootstrap",
+    "chart.js",
+    "javascript"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}

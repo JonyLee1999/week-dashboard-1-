@@ -1,6 +1,6 @@
 # 周维度数据看板
 
-一个基于Python Flask和Bootstrap的周维度Web应用数据看板，用于展示和分析不同平台的数据指标。
+一个基于HTML、CSS、JavaScript和Bootstrap的周维度Web数据看板，用于展示和分析不同平台的数据指标。
 
 ## 功能特性
 
@@ -84,13 +84,6 @@
 
 ## 技术栈
 
-### 后端
-- Python 3.x
-- Flask 2.0.1
-- Flask-CORS 3.0.10
-- Pandas 1.3.3
-- NumPy 1.21.2
-
 ### 前端
 - HTML5
 - CSS3
@@ -98,6 +91,8 @@
 - Bootstrap 5.1.3
 - Chart.js
 - Font Awesome 6.0.0
+- Flatpickr (日期选择器)
+- Day.js (日期处理)
 
 ## 安装和运行
 
@@ -107,69 +102,65 @@ git clone <repository-url>
 cd week-dashboard
 ```
 
-### 2. 安装依赖
-```bash
-pip install -r requirements.txt
-```
+### 2. 直接访问
+由于这是一个纯前端项目，您可以：
+- 直接在浏览器中打开 `index.html` 文件
+- 或者使用本地服务器（如Live Server、http-server等）来运行
 
-### 3. 运行应用
+### 3. 使用开发服务器（可选）
+如果您想使用开发服务器，可以安装Node.js依赖：
 ```bash
-python app.py
+npm install
+npm run dev
 ```
 
 ### 4. 访问应用
-打开浏览器访问：http://localhost:5000
+- 直接打开：双击 `index.html` 文件
+- 开发服务器：http://localhost:3000
 
 ## 项目结构
 
 ```
 week-dashboard/
-├── app/
-│   ├── __init__.py          # Flask应用初始化
-│   ├── routes.py            # 路由和API接口
-│   ├── static/
-│   │   ├── css/
-│   │   │   └── style.css    # 样式文件
-│   │   ├── js/
-│   │   │   └── app.js       # 前端JavaScript
-│   │   └── img/             # 图片资源
-│   └── templates/
-│       └── index.html       # 主页面模板
-├── data/                    # 数据文件目录
-├── app.py                   # 应用入口文件
-├── requirements.txt         # Python依赖
-└── README.md               # 项目说明
+├── css/
+│   └── style.css           # 样式文件
+├── js/
+│   ├── app.js              # 主要应用逻辑
+│   ├── mockData.js         # 模拟数据生成
+│   └── weekPicker.js       # 周选择器组件
+├── node_modules/           # Node.js依赖（如果使用开发服务器）
+├── index.html              # 主页面
+├── package.json            # Node.js项目配置
+├── vite.config.js          # Vite构建配置
+└── README.md              # 项目说明
 ```
 
-## API接口
+## 数据源
 
-### 获取数据
-- **URL**: `/api/data`
-- **方法**: GET
-- **参数**:
-  - `domain`: 数据领域 (transaction/activity/rtb/supply/user)
-  - `platform`: 平台 (all/jd/ele/meituan/duodian/taoxianda)
-  - `start_date`: 开始日期 (YYYY-MM-DD)
-  - `end_date`: 结束日期 (YYYY-MM-DD)
-- **返回**: JSON格式的数据
+项目使用模拟数据来展示功能：
+- 所有数据都通过 `js/mockData.js` 文件生成
+- 支持多个数据领域：交易、活动、RTB、供给、用户
+- 支持多个平台：全平台、美团、京东到家、饿了么、多点、淘鲜达
+- 数据包括指标卡、趋势图表和详细表格
 
 ## 开发说明
 
 ### 添加新的数据领域
-1. 在 `app/routes.py` 中添加新的数据生成函数
-2. 在 `app/static/js/app.js` 中添加对应的卡片生成函数
-3. 在HTML模板中添加新的Tab按钮
-4. 在CSS中添加相应的样式
+1. 在 `js/mockData.js` 中添加新的数据生成函数
+2. 在 `js/app.js` 中添加对应的卡片生成函数和更新逻辑
+3. 在 `index.html` 中添加新的Tab按钮和内容区域
+4. 在 `css/style.css` 中添加相应的样式
 
 ### 自定义样式
-- 主要样式文件：`app/static/css/style.css`
+- 主要样式文件：`css/style.css`
 - 使用Bootstrap 5作为基础框架
 - 支持响应式设计
+- 包含自定义的滚动条样式和动画效果
 
 ### 数据源配置
-- 当前使用模拟数据
-- 可以修改 `app/routes.py` 中的数据生成函数来连接真实数据源
-- 支持数据库、API、文件等多种数据源
+- 当前使用模拟数据（`js/mockData.js`）
+- 可以修改数据生成函数来连接真实数据源
+- 支持AJAX调用、本地存储、文件读取等多种数据获取方式
 
 ## 浏览器兼容性
 
