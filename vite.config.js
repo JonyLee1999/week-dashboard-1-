@@ -4,6 +4,7 @@ import { resolve } from 'path'
 export default defineConfig({
   server: {
     port: 3000,
+    allowedHosts: ['206cae50719b.ngrok-free.app'],
     open: true
   },
   build: {
